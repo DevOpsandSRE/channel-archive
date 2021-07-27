@@ -1,0 +1,4240 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>DevOps, SRE, &amp; Infrastructure - ansible</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <style>
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-300.woff);
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-400.woff);
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-500.woff);
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-600.woff);
+            font-weight: 600;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-700.woff);
+            font-weight: 700;
+        }
+
+        body {
+            background-color: #36393e;
+            color: #dcddde;
+            font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+        }
+
+        a {
+            color: #00aff4;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        img {
+            object-fit: contain;
+        }
+
+        .markdown {
+            max-width: 100%;
+            line-height: 1.3;
+            overflow-wrap: break-word;
+        }
+
+        .preserve-whitespace {
+            white-space: pre-wrap;
+        }
+
+        .spoiler-text {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .spoiler-text--hidden {
+            cursor: pointer;
+            background-color: #202225;
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .spoiler-text--hidden:hover {
+            background-color: rgba(32, 34, 37, 0.8);
+        }
+
+        .spoiler-text--hidden::selection {
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .quote {
+            margin: 0.1em 0;
+            padding-left: 0.6em;
+            border-left: 4px solid #4f545c;
+            border-radius: 3px;
+        }
+
+        .pre {
+            background-color: #2f3136;
+            font-family: "Consolas", "Courier New", Courier, monospace;
+        }
+
+        .pre--multiline {
+            margin-top: 0.25em;
+            padding: 0.5em;
+            border: 2px solid #282b30;
+            border-radius: 5px;
+            color: #b9bbbe;
+        }
+
+        .pre--multiline.hljs {
+            background-color: #2f3136;
+            color: #b9bbbe;
+        }
+
+        .pre--inline {
+            padding: 2px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        .mention {
+            border-radius: 3px;
+            padding: 0 2px;
+            color: #7289da;
+            background-color: rgba(114, 137, 218, .1);
+            font-weight: 500;
+        }
+
+        .timestamp {
+            border-radius: 3px;
+            padding: 0 2px;
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .emoji {
+            width: 1.325em;
+            height: 1.325em;
+            margin: 0 0.06em;
+            vertical-align: -0.4em;
+        }
+
+        .emoji--small {
+            width: 1em;
+            height: 1em;
+        }
+
+        .emoji--large {
+            width: 2.8em;
+            height: 2.8em;
+        }
+
+        .preamble {
+            display: grid;
+            margin: 0 0.3em 0.6em 0.3em;
+            max-width: 100%;
+            grid-template-columns: auto 1fr;
+        }
+
+        .preamble__guild-icon-container {
+            grid-column: 1;
+        }
+
+        .preamble__guild-icon {
+            max-width: 88px;
+            max-height: 88px;
+        }
+
+        .preamble__entries-container {
+            grid-column: 2;
+            margin-left: 0.6em;
+        }
+
+        .preamble__entry {
+            font-size: 1.4em;
+            color: #ffffff;
+        }
+
+        .preamble__entry--small {
+            font-size: 1em;
+        }
+
+        .chatlog {
+            max-width: 100%;
+        }
+
+        .chatlog__message-group {
+            display: grid;
+            margin: 0 0.6em;
+            padding: 0.9em 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            grid-template-columns: auto 1fr;
+        }
+
+        .chatlog__reference-symbol {
+            grid-column: 1;
+            margin: 8px 4px 4px 18px;
+            border-left: 2px solid #4f545c;
+            border-top: 2px solid #4f545c;
+            border-radius: 8px 0 0 0;
+        }
+
+        .chatlog__reference {
+            display: flex;
+            grid-column: 2;
+            margin-bottom: 0.25em;
+            font-size: 0.875em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            align-items: center;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-avatar {
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            margin-right: 0.25em;
+        }
+
+        .chatlog__reference-name {
+            margin-right: 0.25em;
+            font-weight: 600;
+        }
+
+        .chatlog__reference-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__reference-content a:hover {
+            text-decoration: none;
+        }
+
+        .chatlog__reference-link {
+            cursor: pointer;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-link * {
+            display: inline;
+            pointer-events: none;
+        }
+
+        .chatlog__reference-link:hover {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-link:hover *:not(.spoiler-text) {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-edited-timestamp {
+            margin-left: 0.25em;
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__author-avatar-container {
+            grid-column: 1;
+            width: 40px;
+            height: 40px;
+            margin-right: 16px;
+        }
+
+        .chatlog__author-avatar {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+
+        .chatlog__messages {
+            grid-column: 2;
+            min-width: 50%;
+        }
+
+        .chatlog__author-name {
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .chatlog__timestamp {
+            margin-left: 0.3em;
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__message {
+            padding: 0.1em 0.3em;
+            margin: 0 -0.3em;
+            background-color: transparent;
+            transition: background-color 1s ease;
+        }
+
+        .chatlog__message--highlighted {
+            background-color: rgba(114, 137, 218, 0.2);
+        }
+
+        .chatlog__message--pinned {
+            background-color: rgba(249, 168, 37, 0.05);
+        }
+
+        .chatlog__content {
+            font-size: 0.95em;
+            word-wrap: break-word;
+        }
+
+        .chatlog__edited-timestamp {
+            margin-left: 0.15em;
+            font-size: 0.8em;
+        }
+
+        .chatlog__attachment {
+            display: inline-block;
+            position: relative;
+            margin-top: 0.3em;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden {
+            cursor: pointer;
+            box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .chatlog__attachment--hidden * {
+            pointer-events: none;
+        }
+
+        .chatlog__attachment-spoiler-caption {
+            display: none;
+            z-index: 999;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 0.4em 0.8em;
+            background-color: rgba(0, 0, 0, 0.9);
+            border-radius: 20px;
+            color: #dcddde;
+            font-size: 0.9em;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-spoiler-caption {
+            display: block;
+        }
+
+        .chatlog__attachment--hidden:hover .chatlog__attachment-spoiler-caption {
+            color: #fff;
+        }
+
+        .chatlog__attachment-media {
+            vertical-align: top;
+            max-width: 45vw;
+            max-height: 500px;
+            border-radius: 3px;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-media {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic {
+            width: 100%;
+            max-width: 520px;
+            height: 40px;
+            padding: 10px;
+            background-color: #2f3136;
+            border: 1px solid #292b2f;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-generic {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic-icon {
+            float: left;
+            width: 30px;
+            height: 100%;
+            margin-right: 10px;
+        }
+
+        .chatlog__attachment-generic-size {
+            color: #72767d;
+            font-size: 12px;
+        }
+
+        .chatlog__attachment-generic-name {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__edited-timestamp {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__embed {
+            display: flex;
+            margin-top: 0.3em;
+            max-width: 520px;
+        }
+
+        .chatlog__embed-color-pill {
+            flex-shrink: 0;
+            width: 0.25em;
+            border-top-left-radius: 3px;
+            border-bottom-left-radius: 3px;
+        }
+
+        .chatlog__embed-color-pill--default {
+            background-color: #202225;
+        }
+
+        .chatlog__embed-content-container {
+            display: flex;
+            flex-direction: column;
+            padding: 0.5em 0.6em;
+            background-color: rgba(46, 48, 54, 0.3);
+            border: 1px solid rgba(46, 48, 54, 0.6);
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        .chatlog__embed-content {
+            display: flex;
+            width: 100%;
+        }
+
+        .chatlog__embed-text {
+            flex: 1;
+        }
+
+        .chatlog__embed-author {
+            display: flex;
+            margin-bottom: 0.3em;
+            align-items: center;
+        }
+
+        .chatlog__embed-author-icon {
+            margin-right: 0.5em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .chatlog__embed-author-name {
+            font-size: 0.875em;
+            font-weight: 600;
+            color: #ffffff
+        }
+
+        .chatlog__embed-author-name-link {
+            color: #ffffff;
+        }
+
+        .chatlog__embed-title {
+            margin-bottom: 0.2em;
+            font-size: 0.875em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-description {
+            font-weight: 500;
+            font-size: 0.85em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-fields {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .chatlog__embed-field {
+            flex: 0;
+            min-width: 100%;
+            max-width: 506px;
+            padding-top: 0.6em;
+            font-size: 0.875em;
+        }
+
+        .chatlog__embed-field--inline {
+            flex: 1;
+            flex-basis: auto;
+            min-width: 150px;
+        }
+
+        .chatlog__embed-field-name {
+            margin-bottom: 0.2em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-field-value {
+            font-weight: 500;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-thumbnail {
+            flex: 0;
+            margin-left: 1.2em;
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-image-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-image {
+            max-width: 500px;
+            max-height: 400px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-footer {
+            margin-top: 0.6em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-footer-icon {
+            margin-right: 0.2em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+
+        .chatlog__embed-footer-text {
+            vertical-align: middle;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        .chatlog__embed-youtube-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-youtube {
+            border: 0;
+            border-radius: 3px;
+        }
+
+        .chatlog__reactions {
+            display: flex;
+        }
+
+        .chatlog__reaction {
+            display: flex;
+            align-items: center;
+            margin: 0.35em 0.1em 0.1em 0.1em;
+            padding: 0.2em 0.35em;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .chatlog__reaction-count {
+            min-width: 9px;
+            margin-left: 0.35em;
+            font-size: 0.875em;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .chatlog__bot-tag {
+            position: relative;
+            top: -.2em;
+            margin-left: 0.3em;
+            padding: 0.05em 0.3em;
+            border-radius: 3px;
+            vertical-align: middle;
+            line-height: 1.3;
+            background-color: #5865F2;
+            color: #ffffff;
+            font-size: 0.625em;
+            font-weight: 500;
+        }
+
+        .postamble {
+            margin: 1.4em 0.3em 0.6em 0.3em;
+            padding: 1em;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .postamble__entry {
+            color: #ffffff;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/solarized-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.pre--multiline').forEach(block => hljs.highlightBlock(block));
+        });
+    </script>
+
+    <script>
+        function scrollToMessage(event, id) {
+            var element = document.getElementById('message-' + id);
+
+            if (element) {
+                event.preventDefault();
+
+                element.classList.add('chatlog__message--highlighted');
+
+                window.scrollTo({
+                    top: element.getBoundingClientRect().top - document.body.getBoundingClientRect().top - (window.innerHeight / 2),
+                    behavior: 'smooth'
+                });
+
+                window.setTimeout(function() {
+                    element.classList.remove('chatlog__message--highlighted');
+                }, 2000);
+            }
+        }
+
+        function showSpoiler(event, element) {
+            if (element && element.classList.contains('spoiler-text--hidden')) {
+                event.preventDefault();
+                element.classList.remove('spoiler-text--hidden');
+            }
+            if (element && element.classList.contains('chatlog__attachment--hidden')) {
+                event.preventDefault();
+                element.classList.remove('chatlog__attachment--hidden');
+            }
+        }
+    </script>
+
+    <svg style="display: none">
+        <symbol id="icon-attachment" viewBox="0 0 720 960">
+            <path fill="#f4f5fb" d="M50,935a25,25,0,0,1-25-25V50A25,25,0,0,1,50,25H519.6L695,201.32V910a25,25,0,0,1-25,25Z" />
+            <path fill="#7789c4" d="M509.21,50,670,211.63V910H50V50H509.21M530,0H50A50,50,0,0,0,0,50V910a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50h0V191Z" />
+            <path fill="#f4f5fb" d="M530,215a25,25,0,0,1-25-25V50a25,25,0,0,1,16.23-23.41L693.41,198.77A25,25,0,0,1,670,215Z" />
+            <path fill="#7789c4" d="M530,70.71,649.29,190H530V70.71M530,0a50,50,0,0,0-50,50V190a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50Z" />
+        </symbol>
+    </svg>
+</head>
+<body>
+
+<div class="preamble">
+    <div class="preamble__guild-icon-container">
+        <img class="preamble__guild-icon" src="https://cdn.discordapp.com/icons/419745677585940482/a_36f1bfe78afb2a86f04ecdaeeeedeccd.png" alt="Guild icon" loading="lazy">
+    </div>
+    <div class="preamble__entries-container">
+        <div class="preamble__entry">DevOps, SRE, &amp; Infrastructure</div>
+        <div class="preamble__entry">Archived (Staff Only) / ansible</div>
+
+            <div class="preamble__entry preamble__entry--small">Let&#39;s talk about ansible!</div>
+
+    </div>
+</div>
+
+<div class="chatlog">
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/828939626151542835/098040ee9b18eeedfb5078f22c05a735.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="AE#3864" data-user-id="828939626151542835" style="">AE</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 07:52</span>
+
+            <div class="chatlog__message " data-message-id="868037963966218271" id="message-868037963966218271" title="Message sent: 2021-07-23 07:52">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">hi, what are we discussing here about: problems, advice, anecdotes? how did the idea topic of the week came to be?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 07:54</span>
+
+            <div class="chatlog__message " data-message-id="868038323388702781" id="message-868038323388702781" title="Message sent: 2021-07-23 07:54">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">anything you want. I just pulled the topic out of thin air - being the first topic created</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/249473164248219648/a44420ce9a436b2179482825d234b9da.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="KūgisMūgis#0661" data-user-id="249473164248219648" style="">KūgisMūgis</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 08:11</span>
+
+            <div class="chatlog__message " data-message-id="868042656020856832" id="message-868042656020856832" title="Message sent: 2021-07-23 08:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">First for puppet is better than ansible.
+
+
+
+
+
+p.s. I don&#39;t know anything, I just posted this just to get thread rolling</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="">Astral [She / Her]</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 08:11</span>
+
+            <div class="chatlog__message " data-message-id="868042681824198706" id="message-868042681824198706" title="Message sent: 2021-07-23 08:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Still want to learn it need to find time though</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868042731514118174" id="message-868042731514118174" title="Message sent: 2021-07-23 08:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Aka shitposted is what you did.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 11:13</span>
+
+            <div class="chatlog__message " data-message-id="868088383635857428" id="message-868088383635857428" title="Message sent: 2021-07-23 11:13">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Sweet, a week of learning Ansible, I&#39;m all for it <img loading="lazy" class="emoji " alt="😄" title="smile" src="https://twemoji.maxcdn.com/2/svg/1f604.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/828939626151542835/098040ee9b18eeedfb5078f22c05a735.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="AE#3864" data-user-id="828939626151542835" style="">AE</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 11:25</span>
+
+            <div class="chatlog__message " data-message-id="868091365123293224" id="message-868091365123293224" title="Message sent: 2021-07-23 11:25">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">so it seems like there are so many installer out there providing the same thing ansible does
+for example, Jenkins auto installer
+but they all have the same problem: you need to install the installer first
+so you&#39;ll end up using ansible anyways, meaning that you&#39;ll never ever use Jenkins auto installer?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 11:27</span>
+
+            <div class="chatlog__message " data-message-id="868092052997537792" id="message-868092052997537792" title="Message sent: 2021-07-23 11:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://cloudify.co/what-is-the-difference-between-jenkins-and-ansible/">https://cloudify.co/what-is-the-difference-between-jenkins-and-ansible/</a>
+
+<div class="quote">Ansible is a powerful tool for automation to the provision of the target environment and to then deploy the application. Jenkins is a popular tool for IT automation and used for Continuous Integration/Continuous Delivery (CI/CD) to provision the target environment. ……
+</div>&gt; 
+<div class="quote">Jenkins is an open-source CI server, built with Java. It is the leading solution for continuous integration and has plugins to support building and testing projects. Ansible is different from Jenkins by being a tool for IT automation, used for system configuration, software deployment, and more advanced actions such as rolling updates (with zero downtime), and continuous deployments.</div></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/828939626151542835/098040ee9b18eeedfb5078f22c05a735.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="AE#3864" data-user-id="828939626151542835" style="">AE</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 11:35</span>
+
+            <div class="chatlog__message " data-message-id="868094052195790878" id="message-868094052195790878" title="Message sent: 2021-07-23 11:35">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">thanks, i get that. Imagine the following:
+- auto installer provisions the CI environment (tool chains)
+- ansible completely replaces the above
+
+auto installer is convenient once you have Jenkins installed, but some day in the future it adds the extra step to install Jenkins first
+otoh, you&#39;ll end up with a self contained file for your CI pipeline</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/439121172467154946/4ee25aee2333a16ae997127a4806ea9d.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mr.ducky!#2947" data-user-id="439121172467154946" style="">ducky</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 11:37</span>
+
+            <div class="chatlog__message " data-message-id="868094487195439104" id="message-868094487195439104" title="Message sent: 2021-07-23 11:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">how can ansible make my life more easy</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/828939626151542835/098040ee9b18eeedfb5078f22c05a735.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="AE#3864" data-user-id="828939626151542835" style="">AE</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 11:40</span>
+
+            <div class="chatlog__message " data-message-id="868095216496820276" id="message-868095216496820276" title="Message sent: 2021-07-23 11:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention" title="mr.ducky!#2947">@ducky</span> when you want redundant infrastructure it can make sure 2 machines are exactly the same</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/828939626151542835/098040ee9b18eeedfb5078f22c05a735.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="AE#3864" style="">AE</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868095216496820276&#39;)">
+<span class="mention" title="mr.ducky!#2947">@ducky</span> when you want redundant infrastructure it can make sure 2 machines are exactly the same                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/439121172467154946/4ee25aee2333a16ae997127a4806ea9d.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mr.ducky!#2947" data-user-id="439121172467154946" style="">ducky</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 11:40</span>
+
+            <div class="chatlog__message " data-message-id="868095305856471080" id="message-868095305856471080" title="Message sent: 2021-07-23 11:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">cool</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868095658274455552" id="message-868095658274455552" title="Message sent: 2021-07-23 11:42">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">but can i use ansible to auto config setup of Ubuntu server install or rocky linux ?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/828939626151542835/098040ee9b18eeedfb5078f22c05a735.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="AE#3864" data-user-id="828939626151542835" style="">AE</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 12:19</span>
+
+            <div class="chatlog__message " data-message-id="868104960179576853" id="message-868104960179576853" title="Message sent: 2021-07-23 12:19">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">i don&#39;t think so, you need at least a running OS
+i.e i don&#39;t think that ansible can replace a network install</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 12:37</span>
+
+            <div class="chatlog__message " data-message-id="868109553101856768" id="message-868109553101856768" title="Message sent: 2021-07-23 12:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Well, there are net installs, but those aren&#39;t automated. You can use a kickstart file (RHEL, Rocky, Fedora, etc.) or a Debian seed file (Debian, Ubuntu, etc.) and those can customize the install, pending how you set up those files. Similar to Windows ADK and Windows Deployment System</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/187697230767980545/a_5dee552559b07701b1032ab193dfa0a2.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="MultiverseJack#0001" data-user-id="187697230767980545" style="color: rgb(254,95,85)">MultiverseJack</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 12:38</span>
+
+            <div class="chatlog__message " data-message-id="868109944631726131" id="message-868109944631726131" title="Message sent: 2021-07-23 12:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah, for some old servers we have kickstart for base CentOS, then Ansible the rest of it</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-07-23 12:39">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/369210634543300609/a_121e5f0aa449b5938805a26a4539968a.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Natsumi♡#1234" data-user-id="369210634543300609" style="color: rgb(255,203,70)">Agent 8 (it/none)</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 12:39</span>
+
+            <div class="chatlog__message " data-message-id="868109967910117456" id="message-868109967910117456" title="Message sent: 2021-07-23 12:39">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Topic of the week?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 12:40</span>
+
+            <div class="chatlog__message " data-message-id="868110375831347200" id="message-868110375831347200" title="Message sent: 2021-07-23 12:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention">#&#128206;topic-of-the-week</span> <span class="mention" title="Natsumi♡#1234">@Agent 8 (it/none)</span></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/369210634543300609/a_121e5f0aa449b5938805a26a4539968a.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Natsumi♡#1234" data-user-id="369210634543300609" style="color: rgb(255,203,70)">Agent 8 (it/none)</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 12:40</span>
+
+            <div class="chatlog__message " data-message-id="868110442684366879" id="message-868110442684366879" title="Message sent: 2021-07-23 12:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Owo</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 12:41</span>
+
+            <div class="chatlog__message " data-message-id="868110523131109416" id="message-868110523131109416" title="Message sent: 2021-07-23 12:41">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Basically, for 7 days, we focus on a specific technology where you can basically ask anything related to it</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868110600406970459" id="message-868110600406970459" title="Message sent: 2021-07-23 12:41">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It is a new thing that was implemented this week :)</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/828939626151542835/098040ee9b18eeedfb5078f22c05a735.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="AE#3864" data-user-id="828939626151542835" style="">AE</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 12:47</span>
+
+            <div class="chatlog__message " data-message-id="868112056321208360" id="message-868112056321208360" title="Message sent: 2021-07-23 12:47">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">actually it is a new topic every week, starting with Monday
+so this topic ends on Sunday</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868113459890520104" id="message-868113459890520104" title="Message sent: 2021-07-23 12:52">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">kickstart only creates customized installation media, then still needs a network install. Why do you need a kickstart before using ansible?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/187697230767980545/a_5dee552559b07701b1032ab193dfa0a2.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="MultiverseJack#0001" data-user-id="187697230767980545" style="color: rgb(254,95,85)">MultiverseJack</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 13:10</span>
+
+            <div class="chatlog__message " data-message-id="868117897745137684" id="message-868117897745137684" title="Message sent: 2021-07-23 13:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Not too sure, I don&#39;t have much involvement in it really. I just know that there&#39;s an element of using Kickstart for a base CentOS image before Ansible is used for the rest of a server configs</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/828939626151542835/098040ee9b18eeedfb5078f22c05a735.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="AE#3864" style="">AE</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868113459890520104&#39;)">
+kickstart only creates customized installation media, then still needs a network install. Why do you need a kickstart before using ansible?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 14:34</span>
+
+            <div class="chatlog__message " data-message-id="868139097301086208" id="message-868139097301086208" title="Message sent: 2021-07-23 14:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Oh, well, ty for the correction <img loading="lazy" class="emoji " alt="🙂" title="slight_smile" src="https://twemoji.maxcdn.com/2/svg/1f642.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/234812423746486274/a_ca3799a9469fdf6bfad16fa046346a5d.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Rat#2957" data-user-id="234812423746486274" style="color: rgb(254,95,85)">eric cartman</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 14:42</span>
+
+            <div class="chatlog__message " data-message-id="868140984482009109" id="message-868140984482009109" title="Message sent: 2021-07-23 14:42">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">ansible nice</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868140996406427738" id="message-868140996406427738" title="Message sent: 2021-07-23 14:42">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">add ssh key</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868141000474906705" id="message-868141000474906705" title="Message sent: 2021-07-23 14:42">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">push it</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868141099955388496" id="message-868141099955388496" title="Message sent: 2021-07-23 14:42">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://ansible-semaphore.com/">https://ansible-semaphore.com/</a></span>
+
+                        </div>
+                    </div>
+
+
+                    <div class="chatlog__embed">
+                            <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                        <div class="chatlog__embed-content-container">
+                            <div class="chatlog__embed-content">
+                                <div class="chatlog__embed-text">
+
+                                        <div class="chatlog__embed-title">
+                                                <a class="chatlog__embed-title-link" href="https://ansible-semaphore.com/">
+                                                    <div class="markdown preserve-whitespace">Ansible Semaphore is a modern open-source UI for Ansible</div>
+                                                </a>
+                                        </div>
+
+                                        <div class="chatlog__embed-description">
+                                            <div class="markdown preserve-whitespace">If your project has grown and deploying from the terminal is no longer for you then Ansible Semaphore is what you need.</div>
+                                        </div>
+
+                                </div>
+
+                                    <div class="chatlog__embed-thumbnail-container">
+                                        <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/Pxr7eY0ufwTlF_wtnJZrHs5bd2inKAA9tkMjIgquIPc/https/ansible-semaphore.com/img/banner.jpg">
+                                            <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/Pxr7eY0ufwTlF_wtnJZrHs5bd2inKAA9tkMjIgquIPc/https/ansible-semaphore.com/img/banner.jpg" alt="Thumbnail" loading="lazy">
+                                        </a>
+                                    </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+            </div>
+            <div class="chatlog__message " data-message-id="868141143160918069" id="message-868141143160918069" title="Message sent: 2021-07-23 14:42">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">check this out, really cool webui if you&#39;re into that sort of thing.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868141229106425887" id="message-868141229106425887" title="Message sent: 2021-07-23 14:43">
+
+                    <div class="chatlog__attachment " onclick="">
+
+                            <a href="https://cdn.discordapp.com/attachments/867970956210089984/868141226120069160/unknown.png">
+                                <img class="chatlog__attachment-media" src="https://cdn.discordapp.com/attachments/867970956210089984/868141226120069160/unknown.png" alt="Image attachment" title="Image: unknown.png (759.59 KB)" loading="lazy">
+                            </a>
+                    </div>
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/828939626151542835/098040ee9b18eeedfb5078f22c05a735.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="AE#3864" data-user-id="828939626151542835" style="">AE</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 14:56</span>
+
+            <div class="chatlog__message " data-message-id="868144593181503528" id="message-868144593181503528" title="Message sent: 2021-07-23 14:56">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">seems like its self-hosted</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/234812423746486274/a_ca3799a9469fdf6bfad16fa046346a5d.gif?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Rat#2957" style="color: rgb(254,95,85)">eric cartman</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868141099955388496&#39;)">
+<a href="https://ansible-semaphore.com/">https://ansible-semaphore.com/</a>                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/439121172467154946/4ee25aee2333a16ae997127a4806ea9d.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mr.ducky!#2947" data-user-id="439121172467154946" style="">ducky</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:06</span>
+
+            <div class="chatlog__message " data-message-id="868147058471735316" id="message-868147058471735316" title="Message sent: 2021-07-23 15:06">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">i want</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868147071499239445" id="message-868147071499239445" title="Message sent: 2021-07-23 15:06">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">gib</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:06</span>
+
+            <div class="chatlog__message " data-message-id="868147135110062160" id="message-868147135110062160" title="Message sent: 2021-07-23 15:06">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Semaphore is kind of interesting, but for some environments, we run ansible from our work laptops.  It would be kind of a pain to have to install Semaphore on our work laptops to use ansible.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/828939626151542835/098040ee9b18eeedfb5078f22c05a735.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="AE#3864" style="">AE</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868144593181503528&#39;)">
+seems like its self-hosted                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/234812423746486274/a_ca3799a9469fdf6bfad16fa046346a5d.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Rat#2957" data-user-id="234812423746486274" style="color: rgb(254,95,85)">eric cartman</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:09</span>
+
+            <div class="chatlog__message " data-message-id="868147855318212618" id="message-868147855318212618" title="Message sent: 2021-07-23 15:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It is</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868147135110062160&#39;)">
+Semaphore is kind of interesting, but for some environments, we run ansible from our work laptops.  It would be kind of a pain to have to install Semaphore on our work laptops to use ansible.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/234812423746486274/a_ca3799a9469fdf6bfad16fa046346a5d.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Rat#2957" data-user-id="234812423746486274" style="color: rgb(254,95,85)">eric cartman</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:09</span>
+
+            <div class="chatlog__message " data-message-id="868147902743216229" id="message-868147902743216229" title="Message sent: 2021-07-23 15:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Semaphore is kinda designed for teams</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/234812423746486274/a_ca3799a9469fdf6bfad16fa046346a5d.gif?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Rat#2957" style="color: rgb(254,95,85)">eric cartman</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868147902743216229&#39;)">
+Semaphore is kinda designed for teams                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:11</span>
+
+            <div class="chatlog__message " data-message-id="868148223557132368" id="message-868148223557132368" title="Message sent: 2021-07-23 15:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Makes sense. Our team is small.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868148926241452102" id="message-868148926241452102" title="Message sent: 2021-07-23 15:13">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">We even use ansible from cron. We created a playbook to automate snapshots on specific machines and use cron to execute the playbook.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/694106258252365906/f1fb73035d8fe0caf631e68e8acf6421.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="TomC&#129470;&#129489;&#127995;&#128187;#7264" data-user-id="694106258252365906" style="">TomC&#129470;&#129489;&#127995;&#128187;</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:14</span>
+
+            <div class="chatlog__message " data-message-id="868148977269350451" id="message-868148977269350451" title="Message sent: 2021-07-23 15:14">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">whoop happy this is topis of the week! I have just started a ANSIBLE course on UDMEY. I am on video 30 of 120! I am enjoying it. What do you prefer the YAML or the INI file methods? or what is used in the real world more? I feel it is YAML</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-07-23 15:15">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:15</span>
+
+            <div class="chatlog__message " data-message-id="868149234816409620" id="message-868149234816409620" title="Message sent: 2021-07-23 15:15">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Ansible is pretty easy to get. The harder part is figuring out Jinga and how to get it to work with more complicated playbooks.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868149234816409620&#39;)">
+Ansible is pretty easy to get. The harder part is figuring out Jinga and how to get it to work with more complicated playbooks.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/694106258252365906/f1fb73035d8fe0caf631e68e8acf6421.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="TomC&#129470;&#129489;&#127995;&#128187;#7264" data-user-id="694106258252365906" style="">TomC&#129470;&#129489;&#127995;&#128187;</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:19</span>
+
+            <div class="chatlog__message " data-message-id="868150351235264542" id="message-868150351235264542" title="Message sent: 2021-07-23 15:19">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Not on to playbooks yet I am just playing with hosts/groups at moment. I am also connected ansable to AWS with ping module</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-07-23 15:19">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868150682962788502" id="message-868150682962788502" title="Message sent: 2021-07-23 15:20">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I have just compelted a TERRAFORM&#39;ing course. I tried to push an instance up from an old .tf and use ansble on it but it didnt work</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868150710678724619" id="message-868150710678724619" title="Message sent: 2021-07-23 15:20">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">got some learning to do first</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:36</span>
+
+            <div class="chatlog__message " data-message-id="868154689328394280" id="message-868154689328394280" title="Message sent: 2021-07-23 15:36">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Understood.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mateothegreat#0001" data-user-id="505520869246763009" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:38</span>
+
+            <div class="chatlog__message " data-message-id="868155098742812762" id="message-868155098742812762" title="Message sent: 2021-07-23 15:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">For ansible there is ansible tower or ansible AWX (open source)</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message chatlog__message--pinned" data-message-id="868155170855465121" id="message-868155170855465121" title="Message sent: 2021-07-23 15:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://github.com/ansible/awx">https://github.com/ansible/awx</a></span>
+
+                        </div>
+                    </div>
+
+
+                    <div class="chatlog__embed">
+                            <div class="chatlog__embed-color-pill" style="background-color: rgba(30,35,39,255)"></div>
+
+                        <div class="chatlog__embed-content-container">
+                            <div class="chatlog__embed-content">
+                                <div class="chatlog__embed-text">
+
+                                        <div class="chatlog__embed-title">
+                                                <a class="chatlog__embed-title-link" href="https://github.com/ansible/awx">
+                                                    <div class="markdown preserve-whitespace">GitHub - ansible/awx: AWX Project</div>
+                                                </a>
+                                        </div>
+
+                                        <div class="chatlog__embed-description">
+                                            <div class="markdown preserve-whitespace">AWX Project. Contribute to ansible/awx development by creating an account on GitHub.</div>
+                                        </div>
+
+                                </div>
+
+                                    <div class="chatlog__embed-thumbnail-container">
+                                        <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/q0ZcQfQgjhLQ8CqXRrbW1QkDmDwyoDIMZw4B8E89D_U/https/opengraph.githubassets.com/94b759c98be5c6b67270350fc4cbdba71a6ca926615f7d3f63a33448c2279625/ansible/awx">
+                                            <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/q0ZcQfQgjhLQ8CqXRrbW1QkDmDwyoDIMZw4B8E89D_U/https/opengraph.githubassets.com/94b759c98be5c6b67270350fc4cbdba71a6ca926615f7d3f63a33448c2279625/ansible/awx" alt="Thumbnail" loading="lazy">
+                                        </a>
+                                    </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <span class="chatlog__reference-unknown">
+                    Original message was deleted.
+                </span>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mateothegreat#0001" data-user-id="505520869246763009" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:38</span>
+
+            <div class="chatlog__message " data-message-id="868155210500038726" id="message-868155210500038726" title="Message sent: 2021-07-23 15:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Pinned a message.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:39</span>
+
+            <div class="chatlog__message " data-message-id="868155385578668082" id="message-868155385578668082" title="Message sent: 2021-07-23 15:39">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention" title="mateothegreat#0001">@mate&#246;thegreat⚡™</span> Isn&#39;t Ansible Tower a paid product?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mateothegreat#0001" data-user-id="505520869246763009" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:39</span>
+
+            <div class="chatlog__message chatlog__message--pinned" data-message-id="868155407724601434" id="message-868155407724601434" title="Message sent: 2021-07-23 15:39">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Here is some examples on creating roles: <a href="https://github.com/mateothegreat?tab=repositories&q=ansible">https://github.com/mateothegreat?tab=repositories&amp;q=ansible</a></span>
+
+                        </div>
+                    </div>
+
+
+                    <div class="chatlog__embed">
+                            <div class="chatlog__embed-color-pill" style="background-color: rgba(30,35,39,255)"></div>
+
+                        <div class="chatlog__embed-content-container">
+                            <div class="chatlog__embed-content">
+                                <div class="chatlog__embed-text">
+
+                                        <div class="chatlog__embed-title">
+                                                <a class="chatlog__embed-title-link" href="https://github.com/mateothegreat?tab=repositories&amp;q=ansible">
+                                                    <div class="markdown preserve-whitespace">mateothegreat - Repositories</div>
+                                                </a>
+                                        </div>
+
+                                        <div class="chatlog__embed-description">
+                                            <div class="markdown preserve-whitespace">(✌ﾟ∀ﾟ)<img loading="lazy" class="emoji " alt="☞" title="☞" src="https://twemoji.maxcdn.com/2/svg/261e.svg"> Senior Software Architect, Cloud Engineer &amp;  DevOps Advocate - mateothegreat</div>
+                                        </div>
+
+                                </div>
+
+                                    <div class="chatlog__embed-thumbnail-container">
+                                        <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/Df0TkwgYClGR_kw1KBaT-7GiBaQFjMetU9e5IxFxtrA/%3Fv%3D4%3Fs%3D400/https/avatars.githubusercontent.com/u/11623940">
+                                            <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/Df0TkwgYClGR_kw1KBaT-7GiBaQFjMetU9e5IxFxtrA/%3Fv%3D4%3Fs%3D400/https/avatars.githubusercontent.com/u/11623940" alt="Thumbnail" loading="lazy">
+                                        </a>
+                                    </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <span class="chatlog__reference-unknown">
+                    Original message was deleted.
+                </span>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mateothegreat#0001" data-user-id="505520869246763009" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:39</span>
+
+            <div class="chatlog__message " data-message-id="868155443514597436" id="message-868155443514597436" title="Message sent: 2021-07-23 15:39">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Pinned a message.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868155385578668082&#39;)">
+<span class="mention" title="mateothegreat#0001">@mate&#246;thegreat⚡™</span> Isn&#39;t Ansible Tower a paid product?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mateothegreat#0001" data-user-id="505520869246763009" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:39</span>
+
+            <div class="chatlog__message " data-message-id="868155495377166336" id="message-868155495377166336" title="Message sent: 2021-07-23 15:39">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yes, AWX is the opensource version</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:40</span>
+
+            <div class="chatlog__message " data-message-id="868155562402136065" id="message-868155562402136065" title="Message sent: 2021-07-23 15:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Ok. That is what I thought.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868155699820122162" id="message-868155699820122162" title="Message sent: 2021-07-23 15:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention" title="mateothegreat#0001">@mate&#246;thegreat⚡™</span> Do you use Ansible Tower/AWX?</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-07-23 15:41">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mateothegreat#0001" data-user-id="505520869246763009" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:41</span>
+
+            <div class="chatlog__message " data-message-id="868155853134503956" id="message-868155853134503956" title="Message sent: 2021-07-23 15:41">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">AWX</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868156224305238036" id="message-868156224305238036" title="Message sent: 2021-07-23 15:42">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Tower is basically the paid support version.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:47</span>
+
+            <div class="chatlog__message " data-message-id="868157263246934067" id="message-868157263246934067" title="Message sent: 2021-07-23 15:47">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Something I&#39;ll have to play with at a later time, but am def into <img loading="lazy" class="emoji " alt="🙂" title="slight_smile" src="https://twemoji.maxcdn.com/2/svg/1f642.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 15:47</span>
+
+            <div class="chatlog__message " data-message-id="868157312500645959" id="message-868157312500645959" title="Message sent: 2021-07-23 15:47">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I love Ansible roles.</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-07-23 15:47">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 16:04</span>
+
+            <div class="chatlog__message " data-message-id="868161711889342544" id="message-868161711889342544" title="Message sent: 2021-07-23 16:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I&#39;ve very little experience with Ansible myself</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 17:35</span>
+
+            <div class="chatlog__message " data-message-id="868184681449947157" id="message-868184681449947157" title="Message sent: 2021-07-23 17:35">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It takes some getting used to. For example, when you are writing out a playbook (set of tasks) you cannot use tabs...they have to be spaces.  That was  one of the hardest things for me to get used to.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/547363122768248833/f64aaa4997a8c66792d725282890609d.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Radi#4398" data-user-id="547363122768248833" style="">Radi</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 17:56</span>
+
+            <div class="chatlog__message " data-message-id="868189839865024592" id="message-868189839865024592" title="Message sent: 2021-07-23 17:56">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Well, ansible is luckily almost gone</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868189884102361118" id="message-868189884102361118" title="Message sent: 2021-07-23 17:56">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><img loading="lazy" class="emoji emoji--large" alt="gentoo" title="gentoo" src="https://cdn.discordapp.com/emojis/769275746627354625.png"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/547363122768248833/f64aaa4997a8c66792d725282890609d.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Radi#4398" style="">Radi</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868189839865024592&#39;)">
+Well, ansible is luckily almost gone                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mateothegreat#0001" data-user-id="505520869246763009" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 17:57</span>
+
+            <div class="chatlog__message " data-message-id="868190025882415175" id="message-868190025882415175" title="Message sent: 2021-07-23 17:57">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">What does that mean?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/547363122768248833/f64aaa4997a8c66792d725282890609d.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Radi#4398" style="">Radi</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868189839865024592&#39;)">
+Well, ansible is luckily almost gone                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:01</span>
+
+            <div class="chatlog__message " data-message-id="868191086571561022" id="message-868191086571561022" title="Message sent: 2021-07-23 18:01">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I&#39;m very confused. What does Gentoo have to do with Ansible supposedly going away?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/547363122768248833/f64aaa4997a8c66792d725282890609d.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Radi#4398" style="">Radi</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868189839865024592&#39;)">
+Well, ansible is luckily almost gone                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:03</span>
+
+            <div class="chatlog__message " data-message-id="868191719034859520" id="message-868191719034859520" title="Message sent: 2021-07-23 18:03">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">what do you mean it&#39;s almost gone?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868191813356371968" id="message-868191813356371968" title="Message sent: 2021-07-23 18:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It&#39;s one of the most popular configuration management solutions</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:07</span>
+
+            <div class="chatlog__message " data-message-id="868192612148998144" id="message-868192612148998144" title="Message sent: 2021-07-23 18:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah, I would argue against Ansible going away</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="QuantumRaven#7343" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868191086571561022&#39;)">
+I&#39;m very confused. What does Gentoo have to do with Ansible supposedly going away?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:09</span>
+
+            <div class="chatlog__message " data-message-id="868193109970911283" id="message-868193109970911283" title="Message sent: 2021-07-23 18:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I think he just wanted to use the face. Not say its about gentoo at all</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Zig#3569" style="color: rgb(176,226,152)">Zig</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868193109970911283&#39;)">
+I think he just wanted to use the face. Not say its about gentoo at all                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:11</span>
+
+            <div class="chatlog__message " data-message-id="868193659336663050" id="message-868193659336663050" title="Message sent: 2021-07-23 18:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><em>Shrugs</em> Either way</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/187697230767980545/a_5dee552559b07701b1032ab193dfa0a2.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="MultiverseJack#0001" data-user-id="187697230767980545" style="color: rgb(254,95,85)">MultiverseJack</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:13</span>
+
+            <div class="chatlog__message " data-message-id="868194086652379176" id="message-868194086652379176" title="Message sent: 2021-07-23 18:13">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Anyone else think that the docs for Ansible aren&#39;t very good? <img loading="lazy" class="emoji " alt="😄" title="smile" src="https://twemoji.maxcdn.com/2/svg/1f604.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mateothegreat#0001" data-user-id="505520869246763009" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:13</span>
+
+            <div class="chatlog__message " data-message-id="868194247730417735" id="message-868194247730417735" title="Message sent: 2021-07-23 18:13">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">They&#39;re better than most ngl</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/187697230767980545/a_5dee552559b07701b1032ab193dfa0a2.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="MultiverseJack#0001" data-user-id="187697230767980545" style="color: rgb(254,95,85)">MultiverseJack</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:14</span>
+
+            <div class="chatlog__message " data-message-id="868194257335357502" id="message-868194257335357502" title="Message sent: 2021-07-23 18:14">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Maybe I&#39;ve not used it enough so that&#39;s the reason, things seem very unclear with their explanations/direction of the project. The examples they give are nice though</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mateothegreat#0001" data-user-id="505520869246763009" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:14</span>
+
+            <div class="chatlog__message " data-message-id="868194383491645490" id="message-868194383491645490" title="Message sent: 2021-07-23 18:14">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Now, Terraform documentation <img loading="lazy" class="emoji " alt="chefs_kiss" title="chefs_kiss" src="https://cdn.discordapp.com/emojis/765853097268215838.png"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/187697230767980545/a_5dee552559b07701b1032ab193dfa0a2.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="MultiverseJack#0001" data-user-id="187697230767980545" style="color: rgb(254,95,85)">MultiverseJack</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:15</span>
+
+            <div class="chatlog__message " data-message-id="868194585254436884" id="message-868194585254436884" title="Message sent: 2021-07-23 18:15">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I think K8s is my favourite, crystal clear and brilliant explanations/examples</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="mateothegreat#0001" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868194383491645490&#39;)">
+Now, Terraform documentation <img loading="lazy" class="emoji " alt="chefs_kiss" title="chefs_kiss" src="https://cdn.discordapp.com/emojis/765853097268215838.png">                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:16</span>
+
+            <div class="chatlog__message " data-message-id="868194786044170270" id="message-868194786044170270" title="Message sent: 2021-07-23 18:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yes. I love some TF docs <img loading="lazy" class="emoji " alt="😄" title="smile" src="https://twemoji.maxcdn.com/2/svg/1f604.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mateothegreat#0001" data-user-id="505520869246763009" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:22</span>
+
+            <div class="chatlog__message " data-message-id="868196442005721129" id="message-868196442005721129" title="Message sent: 2021-07-23 18:22">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">One thing that is practically never discussed with ansible is testing..</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868196499111170078" id="message-868196499111170078" title="Message sent: 2021-07-23 18:22">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Definitely give <a href="https://molecule.readthedocs.io/">https://molecule.readthedocs.io/</a> a peruse!</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mateothegreat#0001" data-user-id="505520869246763009" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:32</span>
+
+            <div class="chatlog__message " data-message-id="868198998513709138" id="message-868198998513709138" title="Message sent: 2021-07-23 18:32">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">My go to ansible.cfg to speed things up 200x <img loading="lazy" class="emoji " alt="🤫" title="shushing_face" src="https://twemoji.maxcdn.com/2/svg/1f92b.svg"> <div class="pre pre--multiline nohighlight">[defaults]
+ansible_python_interpreter=python3
+callback_whitelist = timer, profile_tasks
+fact_caching_connection = /tmp/facts_cache
+fact_caching = jsonfile
+fact_caching_timeout = 3600
+filter_plugins = plugins/filters
+forks = 50
+gather_subset = !hardware
+gathering = smart
+host_key_checking = False
+internal_poll_interval = 0.001
+inventory_file = inventory/inventory.yaml
+localhost_warning = False
+log_path=logs/ansible.log
+retry_files_enabled = False
+strategy_plugins = plugins/mitogen-0.2.9/ansible_mitogen/plugins/strategy
+strategy = mitogen_linear
+stdout_callback = debug
+
+[ssh_connection]
+pipelining = True</div></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/475a2b6356f0b9c18ee3df4a6ba9d07e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven She/Her</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 18:44</span>
+
+            <div class="chatlog__message " data-message-id="868201847712804936" id="message-868201847712804936" title="Message sent: 2021-07-23 18:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Oh, convenient</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/547363122768248833/f64aaa4997a8c66792d725282890609d.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Radi#4398" style="">Radi</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868189839865024592&#39;)">
+Well, ansible is luckily almost gone                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/a_33ed473dd5b048d7db5fa484bcb8ade2.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="WeblWabl#4200" data-user-id="262322025350168577" style="color: rgb(255,203,70)">webl.js</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 20:23</span>
+
+            <div class="chatlog__message " data-message-id="868226724066889841" id="message-868226724066889841" title="Message sent: 2021-07-23 20:23">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Lmfao this is so cryptic</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/a_33ed473dd5b048d7db5fa484bcb8ade2.gif?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="WeblWabl#4200" style="color: rgb(255,203,70)">webl.js</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868226724066889841&#39;)">
+Lmfao this is so cryptic                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/547363122768248833/f64aaa4997a8c66792d725282890609d.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Radi#4398" data-user-id="547363122768248833" style="">Radi</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 20:24</span>
+
+            <div class="chatlog__message " data-message-id="868226975389581392" id="message-868226975389581392" title="Message sent: 2021-07-23 20:24">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">well ya, i try it to dodge wherever possible but yeah still use it. But don&#39;t do anything new with it</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/a_33ed473dd5b048d7db5fa484bcb8ade2.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="WeblWabl#4200" data-user-id="262322025350168577" style="color: rgb(255,203,70)">webl.js</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 20:30</span>
+
+            <div class="chatlog__message " data-message-id="868228601911336970" id="message-868228601911336970" title="Message sent: 2021-07-23 20:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">huzzuh ansible, I used ansible in this project to deploy wordpress with vagrant to multiple VM&#39;s <img loading="lazy" class="emoji " alt="aniyes" title="aniyes" src="https://cdn.discordapp.com/emojis/657528355222061066.gif"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868228611151376404" id="message-868228611151376404" title="Message sent: 2021-07-23 20:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://github.com/devanbenz/Wordpress-Deploy-v2">https://github.com/devanbenz/Wordpress-Deploy-v2</a></span>
+
+                        </div>
+                    </div>
+
+
+                    <div class="chatlog__embed">
+                            <div class="chatlog__embed-color-pill" style="background-color: rgba(30,35,39,255)"></div>
+
+                        <div class="chatlog__embed-content-container">
+                            <div class="chatlog__embed-content">
+                                <div class="chatlog__embed-text">
+
+                                        <div class="chatlog__embed-title">
+                                                <a class="chatlog__embed-title-link" href="https://github.com/devanbenz/Wordpress-Deploy-v2">
+                                                    <div class="markdown preserve-whitespace">GitHub - devanbenz/Wordpress-Deploy-v2: Wordpress with multiple ser...</div>
+                                                </a>
+                                        </div>
+
+                                        <div class="chatlog__embed-description">
+                                            <div class="markdown preserve-whitespace">Wordpress with multiple servers. Contribute to devanbenz/Wordpress-Deploy-v2 development by creating an account on GitHub.</div>
+                                        </div>
+
+                                </div>
+
+                                    <div class="chatlog__embed-thumbnail-container">
+                                        <a class="chatlog__embed-thumbnail-link" href="https://images-ext-2.discordapp.net/external/_OaYhBmZ2oisV_gMym3dCcSmg6f6zLBuBv5Spk-ABzI/https/opengraph.githubassets.com/5f1cc5824d6650facad3fa5cf3c5366fe26a3fd6aea68fc61baf449208503afb/devanbenz/Wordpress-Deploy-v2">
+                                            <img class="chatlog__embed-thumbnail" src="https://images-ext-2.discordapp.net/external/_OaYhBmZ2oisV_gMym3dCcSmg6f6zLBuBv5Spk-ABzI/https/opengraph.githubassets.com/5f1cc5824d6650facad3fa5cf3c5366fe26a3fd6aea68fc61baf449208503afb/devanbenz/Wordpress-Deploy-v2" alt="Thumbnail" loading="lazy">
+                                        </a>
+                                    </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/367151171418456078/ed80be317984e515be6bcd830facccc8.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Yusuf#5079" data-user-id="367151171418456078" style="color: rgb(255,203,70)">Yusuf</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 21:10</span>
+
+            <div class="chatlog__message " data-message-id="868238570371055646" id="message-868238570371055646" title="Message sent: 2021-07-23 21:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">oh</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868238605787738202" id="message-868238605787738202" title="Message sent: 2021-07-23 21:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">i am learning ansible with no practice</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868238680467308705" id="message-868238680467308705" title="Message sent: 2021-07-23 21:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">just theory with videos <img loading="lazy" class="emoji " alt="😄" title="smile" src="https://twemoji.maxcdn.com/2/svg/1f604.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/505520869246763009/9090243ecc7accf3e7fb1f1abcb0c3c6.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mateothegreat#0001" data-user-id="505520869246763009" style="color: rgb(207,36,246)">mate&#246;thegreat⚡™</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 21:11</span>
+
+            <div class="chatlog__message " data-message-id="868238804690042940" id="message-868238804690042940" title="Message sent: 2021-07-23 21:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><img loading="lazy" class="emoji emoji--large" alt="success" title="success" src="https://cdn.discordapp.com/emojis/662417616232775691.png"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868238837124587550" id="message-868238837124587550" title="Message sent: 2021-07-23 21:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Let me know if you need a hand!</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/367151171418456078/ed80be317984e515be6bcd830facccc8.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Yusuf#5079" data-user-id="367151171418456078" style="color: rgb(255,203,70)">Yusuf</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 21:11</span>
+
+            <div class="chatlog__message " data-message-id="868238996273246209" id="message-868238996273246209" title="Message sent: 2021-07-23 21:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">thanks!</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="">Astral [She / Her]</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 21:24</span>
+
+            <div class="chatlog__message " data-message-id="868242162444296212" id="message-868242162444296212" title="Message sent: 2021-07-23 21:24">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">wordpress or multiple walking zero days?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/a_33ed473dd5b048d7db5fa484bcb8ade2.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="WeblWabl#4200" data-user-id="262322025350168577" style="color: rgb(255,203,70)">webl.js</span>
+
+
+        <span class="chatlog__timestamp">2021-07-23 23:06</span>
+
+            <div class="chatlog__message " data-message-id="868267965781512223" id="message-868267965781512223" title="Message sent: 2021-07-23 23:06">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">multiple walking zero days <img loading="lazy" class="emoji " alt="kekw" title="kekw" src="https://cdn.discordapp.com/emojis/655931480505057291.png"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868268004381708349" id="message-868268004381708349" title="Message sent: 2021-07-23 23:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It was for fun not really a production thing hehe</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868147135110062160&#39;)">
+Semaphore is kind of interesting, but for some environments, we run ansible from our work laptops.  It would be kind of a pain to have to install Semaphore on our work laptops to use ansible.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/828939626151542835/098040ee9b18eeedfb5078f22c05a735.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="AE#3864" data-user-id="828939626151542835" style="">AE</span>
+
+
+        <span class="chatlog__timestamp">2021-07-24 11:02</span>
+
+            <div class="chatlog__message " data-message-id="868448029898866718" id="message-868448029898866718" title="Message sent: 2021-07-24 11:02">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">but given that it&#39;s a web application it should be possible to access over network, i.e a single installation</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="">Astral [She / Her]</span>
+
+
+        <span class="chatlog__timestamp">2021-07-24 18:52</span>
+
+            <div class="chatlog__message " data-message-id="868566244364779551" id="message-868566244364779551" title="Message sent: 2021-07-24 18:52">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Not everything needs a gui though</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-24 18:56</span>
+
+            <div class="chatlog__message " data-message-id="868567393113350164" id="message-868567393113350164" title="Message sent: 2021-07-24 18:56">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">agreed</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="">Astral [She / Her]</span>
+
+
+        <span class="chatlog__timestamp">2021-07-24 20:07</span>
+
+            <div class="chatlog__message " data-message-id="868585133563858954" id="message-868585133563858954" title="Message sent: 2021-07-24 20:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It&#39;s really annoying when you&#39;re helping someone and you think their using CLI when in reality they&#39;re using GUI and they feel like they&#39;ve learned a lot from doing stuff via GUI but the GUI works differently then CLI and certain stuff done in GUI didn&#39;t work like it would natively with CLI (Proper uses etc)</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-24 20:37</span>
+
+            <div class="chatlog__message " data-message-id="868592660242370592" id="message-868592660242370592" title="Message sent: 2021-07-24 20:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yep. I rarely use any kind of IDE when programming.  I generally use print statements and that gives me most of what I need to know when debugging something. I learned to program on a teletype. Try line editing on a teletype once.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/446354645078769684/6e668fd562f27816368bf59442ccb187.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="git merge --squash#8174" data-user-id="446354645078769684" style="">git merge --squash</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 01:17</span>
+
+            <div class="chatlog__message " data-message-id="868663175418118205" id="message-868663175418118205" title="Message sent: 2021-07-25 01:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention" title="unixpgmr#6413">@unixpgmr</span> Were you in the Air force?</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-07-25 01:21">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/446354645078769684/6e668fd562f27816368bf59442ccb187.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="git merge --squash#8174" style="">git merge --squash</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868663175418118205&#39;)">
+<span class="mention" title="unixpgmr#6413">@unixpgmr</span> Were you in the Air force?                    </span>
+
+                        <span class="chatlog__reference-edited-timestamp" title="2021-07-25 01:21">(edited)</span>
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 01:23</span>
+
+            <div class="chatlog__message " data-message-id="868664675921960960" id="message-868664675921960960" title="Message sent: 2021-07-25 01:23">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">No I am not. Why do you ask?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/446354645078769684/6e668fd562f27816368bf59442ccb187.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="git merge --squash#8174" data-user-id="446354645078769684" style="">git merge --squash</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 01:26</span>
+
+            <div class="chatlog__message " data-message-id="868665461238288395" id="message-868665461238288395" title="Message sent: 2021-07-25 01:26">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It looks like a very old technology so I thought you were making a funny.   It looks like a very difficult device learn....</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 01:26</span>
+
+            <div class="chatlog__message " data-message-id="868665590464806912" id="message-868665590464806912" title="Message sent: 2021-07-25 01:26">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">No, I am just old....I remember when dirt was invented.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/446354645078769684/6e668fd562f27816368bf59442ccb187.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="git merge --squash#8174" data-user-id="446354645078769684" style="">git merge --squash</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 01:27</span>
+
+            <div class="chatlog__message " data-message-id="868665647108878347" id="message-868665647108878347" title="Message sent: 2021-07-25 01:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention" title="unixpgmr#6413">@unixpgmr</span> I can&#39;t even use a typewriter...</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868665861093863464" id="message-868665861093863464" title="Message sent: 2021-07-25 01:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I am older too. I am having a hard time getting work because of it.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868666033819496498" id="message-868666033819496498" title="Message sent: 2021-07-25 01:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention" title="unixpgmr#6413">@unixpgmr</span> it is a tough world...</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 01:31</span>
+
+            <div class="chatlog__message " data-message-id="868666632401219604" id="message-868666632401219604" title="Message sent: 2021-07-25 01:31">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">The technology field is very agist.  I was out of work for over a year before I got this job. I left academia to go back to the commercial world.  I lost my apartment and I had to move back with my family. It was very rough, but I managed to get a great job.  So can you.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/446354645078769684/6e668fd562f27816368bf59442ccb187.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="git merge --squash#8174" data-user-id="446354645078769684" style="">git merge --squash</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 01:33</span>
+
+            <div class="chatlog__message " data-message-id="868667128780320818" id="message-868667128780320818" title="Message sent: 2021-07-25 01:33">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">What state are you in?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 01:35</span>
+
+            <div class="chatlog__message " data-message-id="868667670982172723" id="message-868667670982172723" title="Message sent: 2021-07-25 01:35">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I am in the midwest.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868665590464806912&#39;)">
+No, I am just old....I remember when dirt was invented.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 01:50</span>
+
+            <div class="chatlog__message " data-message-id="868671572725088297" id="message-868671572725088297" title="Message sent: 2021-07-25 01:50">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Haha. You were around when the moon was formed</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868671589955289119" id="message-868671589955289119" title="Message sent: 2021-07-25 01:50">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Jkjk</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 01:51</span>
+
+            <div class="chatlog__message " data-message-id="868671751389872128" id="message-868671751389872128" title="Message sent: 2021-07-25 01:51">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">no...dirt was already around by that time.   <img loading="lazy" class="emoji " alt="🙂" title="slight_smile" src="https://twemoji.maxcdn.com/2/svg/1f642.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 01:51</span>
+
+            <div class="chatlog__message " data-message-id="868671781651750972" id="message-868671781651750972" title="Message sent: 2021-07-25 01:51">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">True</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 01:51</span>
+
+            <div class="chatlog__message " data-message-id="868671868725493761" id="message-868671868725493761" title="Message sent: 2021-07-25 01:51">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Lets just say, I am a senior citizen</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868672134761824306" id="message-868672134761824306" title="Message sent: 2021-07-25 01:52">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I watched the internet get invented. I was on networked computer by DEC called DECNET.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868672543618400257" id="message-868672543618400257" title="Message sent: 2021-07-25 01:54">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I remember the Gopher protocol and using Telnet extensively. My first computer was a Dec PDP 11 and I had to use a teletype because it it was in another city</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868671751389872128&#39;)">
+no...dirt was already around by that time.   <img loading="lazy" class="emoji " alt="🙂" title="slight_smile" src="https://twemoji.maxcdn.com/2/svg/1f642.svg">                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/199299030864363521/6fa9a981f7db68c4aff2074c8eab0814.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nullbuilt#0588" data-user-id="199299030864363521" style="">Nullbuilt</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 02:06</span>
+
+            <div class="chatlog__message " data-message-id="868675656450469898" id="message-868675656450469898" title="Message sent: 2021-07-25 02:06">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">In the beginning your spirit flowed in the waters.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 02:07</span>
+
+            <div class="chatlog__message " data-message-id="868675746669928469" id="message-868675746669928469" title="Message sent: 2021-07-25 02:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">LOL</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868675822641381416" id="message-868675822641381416" title="Message sent: 2021-07-25 02:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Some days I truly feel that old.</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-07-25 02:07">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868676097787703316" id="message-868676097787703316" title="Message sent: 2021-07-25 02:08">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">One thing to remember about getting old: Your medicine cabinet will be filled with actual medicine (prescriptions).</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/828939626151542835/098040ee9b18eeedfb5078f22c05a735.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="AE#3864" data-user-id="828939626151542835" style="">AE</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 09:09</span>
+
+            <div class="chatlog__message " data-message-id="868782018358566944" id="message-868782018358566944" title="Message sent: 2021-07-25 09:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">what programming language were you using and what did remote development look like back then with the dev team?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/439121172467154946/4ee25aee2333a16ae997127a4806ea9d.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mr.ducky!#2947" data-user-id="439121172467154946" style="">ducky</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 17:44</span>
+
+            <div class="chatlog__message " data-message-id="868911722675724368" id="message-868911722675724368" title="Message sent: 2021-07-25 17:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">so can i use ansible to setup and configure my mac</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868911780259319848" id="message-868911780259319848" title="Message sent: 2021-07-25 17:45">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">dev environment</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 17:46</span>
+
+            <div class="chatlog__message " data-message-id="868912107620536330" id="message-868912107620536330" title="Message sent: 2021-07-25 17:46">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Sure but that&#39;s not what it&#39;s for</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/ae834a5dcbf9eeba44c66bd1695ffafe.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 19:02</span>
+
+            <div class="chatlog__message " data-message-id="868931239887921282" id="message-868931239887921282" title="Message sent: 2021-07-25 19:02">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Well, today is the last day for the Ansible topic.  What is next, Puppet? It would be a nice followup to Ansible.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 20:27</span>
+
+            <div class="chatlog__message " data-message-id="868952549401706558" id="message-868952549401706558" title="Message sent: 2021-07-25 20:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Maybe we could have an ongoing poll during the week for the next subject?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868952649276473364" id="message-868952649276473364" title="Message sent: 2021-07-25 20:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Puppet would be kind of cool - I want to learn more about it</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 20:45</span>
+
+            <div class="chatlog__message " data-message-id="868957060329521192" id="message-868957060329521192" title="Message sent: 2021-07-25 20:45">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">anything really. Doesnt have to be config management. Anything DevOps</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/233679692694159360/256b8ac7aeb8b75f4b8ff73456a89521.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="fraud#3693" data-user-id="233679692694159360" style="">&#128072;smartest guy here (big(facts))</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 20:51</span>
+
+            <div class="chatlog__message " data-message-id="868958780723986594" id="message-868958780723986594" title="Message sent: 2021-07-25 20:51">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I think a poll would be great <span class="mention" title="Snowie (D4rk)#0116">@Snowie (D4rk)</span></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="868958840882855966" id="message-868958840882855966" title="Message sent: 2021-07-25 20:52">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Curious about puppet as well but down to vote too</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 20:55</span>
+
+            <div class="chatlog__message " data-message-id="868959547933478963" id="message-868959547933478963" title="Message sent: 2021-07-25 20:55">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Curious how a poll would work though. List a topic, vote on it, if mostly down votes, then another poll on another topic, down voted again, new topic poll etc etc etc. Sounds like it could almost take a week to decide on the next week&#39;s topic</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 20:55</span>
+
+            <div class="chatlog__message " data-message-id="868959713088385094" id="message-868959713088385094" title="Message sent: 2021-07-25 20:55">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Nah - I&#39;m thinking grab a few different subjects and see</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="point_up_2">
+                                <img class="emoji emoji--small" alt="&#128070;" src="https://twemoji.maxcdn.com/2/svg/1f446.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 20:55</span>
+
+            <div class="chatlog__message " data-message-id="868959729647513601" id="message-868959729647513601" title="Message sent: 2021-07-25 20:55">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">or maybe have a bot that would list 5 topics. Have people decide on the 5. Most votes win</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 20:55</span>
+
+            <div class="chatlog__message " data-message-id="868959792545267712" id="message-868959792545267712" title="Message sent: 2021-07-25 20:55">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">People can message a bit or Google form or something to add suggestions to the poll lost or something idk</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Zig#3569" style="color: rgb(176,226,152)">Zig</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;868959729647513601&#39;)">
+or maybe have a bot that would list 5 topics. Have people decide on the 5. Most votes win                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 20:56</span>
+
+            <div class="chatlog__message " data-message-id="868959819321712731" id="message-868959819321712731" title="Message sent: 2021-07-25 20:56">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah I was thinking more of that</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-07-25 21:13</span>
+
+            <div class="chatlog__message " data-message-id="868964159822368769" id="message-868964159822368769" title="Message sent: 2021-07-25 21:13">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention" title="fraud#3693">@&#128072;smartest guy here (big(facts))</span> vote again in <span class="mention">#topic-poll</span></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+</div>
+
+<div class="postamble">
+    <div class="postamble__entry">Exported 134 message(s)</div>
+</div>
+
+</body>
+
+</html>
