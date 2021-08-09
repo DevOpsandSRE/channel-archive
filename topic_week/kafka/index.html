@@ -1,0 +1,2467 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>DevOps, SRE, &amp; Infrastructure - kafka</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <style>
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-300.woff);
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-400.woff);
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-500.woff);
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-600.woff);
+            font-weight: 600;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-700.woff);
+            font-weight: 700;
+        }
+
+        body {
+            background-color: #36393e;
+            color: #dcddde;
+            font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+        }
+
+        a {
+            color: #00aff4;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        img {
+            object-fit: contain;
+        }
+
+        .markdown {
+            max-width: 100%;
+            line-height: 1.3;
+            overflow-wrap: break-word;
+        }
+
+        .preserve-whitespace {
+            white-space: pre-wrap;
+        }
+
+        .spoiler-text {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .spoiler-text--hidden {
+            cursor: pointer;
+            background-color: #202225;
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .spoiler-text--hidden:hover {
+            background-color: rgba(32, 34, 37, 0.8);
+        }
+
+        .spoiler-text--hidden::selection {
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .quote {
+            margin: 0.1em 0;
+            padding-left: 0.6em;
+            border-left: 4px solid #4f545c;
+            border-radius: 3px;
+        }
+
+        .pre {
+            background-color: #2f3136;
+            font-family: "Consolas", "Courier New", Courier, monospace;
+        }
+
+        .pre--multiline {
+            margin-top: 0.25em;
+            padding: 0.5em;
+            border: 2px solid #282b30;
+            border-radius: 5px;
+            color: #b9bbbe;
+        }
+
+        .pre--multiline.hljs {
+            background-color: #2f3136;
+            color: #b9bbbe;
+        }
+
+        .pre--inline {
+            padding: 2px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        .mention {
+            border-radius: 3px;
+            padding: 0 2px;
+            color: #7289da;
+            background-color: rgba(114, 137, 218, .1);
+            font-weight: 500;
+        }
+
+        .timestamp {
+            border-radius: 3px;
+            padding: 0 2px;
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .emoji {
+            width: 1.325em;
+            height: 1.325em;
+            margin: 0 0.06em;
+            vertical-align: -0.4em;
+        }
+
+        .emoji--small {
+            width: 1em;
+            height: 1em;
+        }
+
+        .emoji--large {
+            width: 2.8em;
+            height: 2.8em;
+        }
+
+        .preamble {
+            display: grid;
+            margin: 0 0.3em 0.6em 0.3em;
+            max-width: 100%;
+            grid-template-columns: auto 1fr;
+        }
+
+        .preamble__guild-icon-container {
+            grid-column: 1;
+        }
+
+        .preamble__guild-icon {
+            max-width: 88px;
+            max-height: 88px;
+        }
+
+        .preamble__entries-container {
+            grid-column: 2;
+            margin-left: 0.6em;
+        }
+
+        .preamble__entry {
+            font-size: 1.4em;
+            color: #ffffff;
+        }
+
+        .preamble__entry--small {
+            font-size: 1em;
+        }
+
+        .chatlog {
+            max-width: 100%;
+        }
+
+        .chatlog__message-group {
+            display: grid;
+            margin: 0 0.6em;
+            padding: 0.9em 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            grid-template-columns: auto 1fr;
+        }
+
+        .chatlog__reference-symbol {
+            grid-column: 1;
+            margin: 8px 4px 4px 18px;
+            border-left: 2px solid #4f545c;
+            border-top: 2px solid #4f545c;
+            border-radius: 8px 0 0 0;
+        }
+
+        .chatlog__reference {
+            display: flex;
+            grid-column: 2;
+            margin-bottom: 0.25em;
+            font-size: 0.875em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            align-items: center;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-avatar {
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            margin-right: 0.25em;
+        }
+
+        .chatlog__reference-name {
+            margin-right: 0.25em;
+            font-weight: 600;
+        }
+
+        .chatlog__reference-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__reference-content a:hover {
+            text-decoration: none;
+        }
+
+        .chatlog__reference-link {
+            cursor: pointer;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-link * {
+            display: inline;
+            pointer-events: none;
+        }
+
+        .chatlog__reference-link:hover {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-link:hover *:not(.spoiler-text) {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-edited-timestamp {
+            margin-left: 0.25em;
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__author-avatar-container {
+            grid-column: 1;
+            width: 40px;
+            height: 40px;
+            margin-right: 16px;
+        }
+
+        .chatlog__author-avatar {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+
+        .chatlog__messages {
+            grid-column: 2;
+            min-width: 50%;
+        }
+
+        .chatlog__author-name {
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .chatlog__timestamp {
+            margin-left: 0.3em;
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__message {
+            padding: 0.1em 0.3em;
+            margin: 0 -0.3em;
+            background-color: transparent;
+            transition: background-color 1s ease;
+        }
+
+        .chatlog__message--highlighted {
+            background-color: rgba(114, 137, 218, 0.2);
+        }
+
+        .chatlog__message--pinned {
+            background-color: rgba(249, 168, 37, 0.05);
+        }
+
+        .chatlog__content {
+            font-size: 0.95em;
+            word-wrap: break-word;
+        }
+
+        .chatlog__edited-timestamp {
+            margin-left: 0.15em;
+            font-size: 0.8em;
+        }
+
+        .chatlog__attachment {
+            display: inline-block;
+            position: relative;
+            margin-top: 0.3em;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden {
+            cursor: pointer;
+            box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .chatlog__attachment--hidden * {
+            pointer-events: none;
+        }
+
+        .chatlog__attachment-spoiler-caption {
+            display: none;
+            z-index: 999;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 0.4em 0.8em;
+            background-color: rgba(0, 0, 0, 0.9);
+            border-radius: 20px;
+            color: #dcddde;
+            font-size: 0.9em;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-spoiler-caption {
+            display: block;
+        }
+
+        .chatlog__attachment--hidden:hover .chatlog__attachment-spoiler-caption {
+            color: #fff;
+        }
+
+        .chatlog__attachment-media {
+            vertical-align: top;
+            max-width: 45vw;
+            max-height: 500px;
+            border-radius: 3px;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-media {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic {
+            width: 100%;
+            max-width: 520px;
+            height: 40px;
+            padding: 10px;
+            background-color: #2f3136;
+            border: 1px solid #292b2f;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-generic {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic-icon {
+            float: left;
+            width: 30px;
+            height: 100%;
+            margin-right: 10px;
+        }
+
+        .chatlog__attachment-generic-size {
+            color: #72767d;
+            font-size: 12px;
+        }
+
+        .chatlog__attachment-generic-name {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__edited-timestamp {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__embed {
+            display: flex;
+            margin-top: 0.3em;
+            max-width: 520px;
+        }
+
+        .chatlog__embed-color-pill {
+            flex-shrink: 0;
+            width: 0.25em;
+            border-top-left-radius: 3px;
+            border-bottom-left-radius: 3px;
+        }
+
+        .chatlog__embed-color-pill--default {
+            background-color: #202225;
+        }
+
+        .chatlog__embed-content-container {
+            display: flex;
+            flex-direction: column;
+            padding: 0.5em 0.6em;
+            background-color: rgba(46, 48, 54, 0.3);
+            border: 1px solid rgba(46, 48, 54, 0.6);
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        .chatlog__embed-content {
+            display: flex;
+            width: 100%;
+        }
+
+        .chatlog__embed-text {
+            flex: 1;
+        }
+
+        .chatlog__embed-author {
+            display: flex;
+            margin-bottom: 0.3em;
+            align-items: center;
+        }
+
+        .chatlog__embed-author-icon {
+            margin-right: 0.5em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .chatlog__embed-author-name {
+            font-size: 0.875em;
+            font-weight: 600;
+            color: #ffffff
+        }
+
+        .chatlog__embed-author-name-link {
+            color: #ffffff;
+        }
+
+        .chatlog__embed-title {
+            margin-bottom: 0.2em;
+            font-size: 0.875em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-description {
+            font-weight: 500;
+            font-size: 0.85em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-fields {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .chatlog__embed-field {
+            flex: 0;
+            min-width: 100%;
+            max-width: 506px;
+            padding-top: 0.6em;
+            font-size: 0.875em;
+        }
+
+        .chatlog__embed-field--inline {
+            flex: 1;
+            flex-basis: auto;
+            min-width: 150px;
+        }
+
+        .chatlog__embed-field-name {
+            margin-bottom: 0.2em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-field-value {
+            font-weight: 500;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-thumbnail {
+            flex: 0;
+            margin-left: 1.2em;
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-image-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-image {
+            max-width: 500px;
+            max-height: 400px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-footer {
+            margin-top: 0.6em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-footer-icon {
+            margin-right: 0.2em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+
+        .chatlog__embed-footer-text {
+            vertical-align: middle;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        .chatlog__embed-youtube-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-youtube {
+            border: 0;
+            border-radius: 3px;
+        }
+
+        .chatlog__reactions {
+            display: flex;
+        }
+
+        .chatlog__reaction {
+            display: flex;
+            align-items: center;
+            margin: 0.35em 0.1em 0.1em 0.1em;
+            padding: 0.2em 0.35em;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .chatlog__reaction-count {
+            min-width: 9px;
+            margin-left: 0.35em;
+            font-size: 0.875em;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .chatlog__bot-tag {
+            position: relative;
+            top: -.2em;
+            margin-left: 0.3em;
+            padding: 0.05em 0.3em;
+            border-radius: 3px;
+            vertical-align: middle;
+            line-height: 1.3;
+            background-color: #5865F2;
+            color: #ffffff;
+            font-size: 0.625em;
+            font-weight: 500;
+        }
+
+        .postamble {
+            margin: 1.4em 0.3em 0.6em 0.3em;
+            padding: 1em;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .postamble__entry {
+            color: #ffffff;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/solarized-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.pre--multiline').forEach(block => hljs.highlightBlock(block));
+        });
+    </script>
+
+    <script>
+        function scrollToMessage(event, id) {
+            var element = document.getElementById('message-' + id);
+
+            if (element) {
+                event.preventDefault();
+
+                element.classList.add('chatlog__message--highlighted');
+
+                window.scrollTo({
+                    top: element.getBoundingClientRect().top - document.body.getBoundingClientRect().top - (window.innerHeight / 2),
+                    behavior: 'smooth'
+                });
+
+                window.setTimeout(function() {
+                    element.classList.remove('chatlog__message--highlighted');
+                }, 2000);
+            }
+        }
+
+        function showSpoiler(event, element) {
+            if (element && element.classList.contains('spoiler-text--hidden')) {
+                event.preventDefault();
+                element.classList.remove('spoiler-text--hidden');
+            }
+            if (element && element.classList.contains('chatlog__attachment--hidden')) {
+                event.preventDefault();
+                element.classList.remove('chatlog__attachment--hidden');
+            }
+        }
+    </script>
+
+    <svg style="display: none">
+        <symbol id="icon-attachment" viewBox="0 0 720 960">
+            <path fill="#f4f5fb" d="M50,935a25,25,0,0,1-25-25V50A25,25,0,0,1,50,25H519.6L695,201.32V910a25,25,0,0,1-25,25Z" />
+            <path fill="#7789c4" d="M509.21,50,670,211.63V910H50V50H509.21M530,0H50A50,50,0,0,0,0,50V910a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50h0V191Z" />
+            <path fill="#f4f5fb" d="M530,215a25,25,0,0,1-25-25V50a25,25,0,0,1,16.23-23.41L693.41,198.77A25,25,0,0,1,670,215Z" />
+            <path fill="#7789c4" d="M530,70.71,649.29,190H530V70.71M530,0a50,50,0,0,0-50,50V190a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50Z" />
+        </symbol>
+    </svg>
+</head>
+<body>
+
+<div class="preamble">
+    <div class="preamble__guild-icon-container">
+        <img class="preamble__guild-icon" src="https://cdn.discordapp.com/icons/419745677585940482/a_36f1bfe78afb2a86f04ecdaeeeedeccd.png" alt="Guild icon" loading="lazy">
+    </div>
+    <div class="preamble__entries-container">
+        <div class="preamble__entry">DevOps, SRE, &amp; Infrastructure</div>
+        <div class="preamble__entry">Topic of the Week / kafka</div>
+
+            <div class="preamble__entry preamble__entry--small">Let&#39;s discuss Kafka!</div>
+
+    </div>
+</div>
+
+<div class="chatlog">
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/a_c49d35eec84ababe60712d3d19379666.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="WeblWabl#4200" data-user-id="262322025350168577" style="color: rgb(255,203,70)">webl.js // #banoffices #ecsgang</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 12:44</span>
+
+            <div class="chatlog__message " data-message-id="871735240362713128" id="message-871735240362713128" title="Message sent: 2021-08-02 12:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Someone give me the tldr on what Kafka is and what is it used for lol</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/572081724150775840/ea7b861c38ab6fee80ab4072e7958cfc.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="sundar#4916" data-user-id="572081724150775840" style="">sundar</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 13:28</span>
+
+            <div class="chatlog__message " data-message-id="871746277958877195" id="message-871746277958877195" title="Message sent: 2021-08-02 13:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Bruhh what is Kafka , I&#39;ve never heard it before , what Kafka is used for ?? Where it is used ???</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 14:26</span>
+
+            <div class="chatlog__message " data-message-id="871760909524168744" id="message-871760909524168744" title="Message sent: 2021-08-02 14:26">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Kafka is similar to many other message queues. If you&#39;ve ever used rabbit MQ or active MQ or such, Kafka has a lot of the same features. Kafka has some serious advantages imo and is my preferred one. It&#39;s far more/easier to scale and has really high performance using partitions and whatnot. Also instead of the ack style system, messages can be stored for an indefinite amount of time (I mean based on your memory / disk of course), and instead of a king you just move the message pointer forward, which allows for message replay and stuff</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/a_c49d35eec84ababe60712d3d19379666.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="WeblWabl#4200" data-user-id="262322025350168577" style="color: rgb(255,203,70)">webl.js // #banoffices #ecsgang</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 14:28</span>
+
+            <div class="chatlog__message " data-message-id="871761492423376967" id="message-871761492423376967" title="Message sent: 2021-08-02 14:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I know I could probably look this up but what exactly is a messaging queue and what is the use case lol</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 14:38</span>
+
+            <div class="chatlog__message " data-message-id="871763898011910225" id="message-871763898011910225" title="Message sent: 2021-08-02 14:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Hmmm. You might be less confused by just looking it up, but I&#39;ll give it an attempt: A message queue is basically exactly what it sounds like, it&#39;s a queue or series of queues that hold messages that can usually be arbitrary byte data. It&#39;s very useful for something like when it comes to scale and distribution. For example if I have a part of my app that&#39;s scaled down, put a whole bunch of messages into the queue one for each notification email that should be sent to a user let&#39;s say, I could have a hundred different workers that are all pulling from the queue so that I get a better balanced workload. Also most message queues have some form of ack/nack system, which allows you to guarantee that of messages delivered at least once, so that if one of your workers crashes or gets turned off in the middle of trying to process the message, you can retry easily</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/a_c49d35eec84ababe60712d3d19379666.gif?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="WeblWabl#4200" style="color: rgb(255,203,70)">webl.js // #banoffices #ecsgang</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;871761492423376967&#39;)">
+I know I could probably look this up but what exactly is a messaging queue and what is the use case lol                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 14:39</span>
+
+            <div class="chatlog__message " data-message-id="871764028979044372" id="message-871764028979044372" title="Message sent: 2021-08-02 14:39">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">There&#39;s a fair bit more to them, but the most important facet is that it&#39;s in useful and easy way to pass data around between microservices or applications, in a redundant, scalable, and very fast way</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/a_c49d35eec84ababe60712d3d19379666.gif?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="WeblWabl#4200" style="color: rgb(255,203,70)">webl.js // #banoffices #ecsgang</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;871761492423376967&#39;)">
+I know I could probably look this up but what exactly is a messaging queue and what is the use case lol                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/80732956108263424/604eb246277ef3920f60feb2de136a33.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="sathyabhat#2391" data-user-id="80732956108263424" style="">sathyabhat</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 14:39</span>
+
+            <div class="chatlog__message " data-message-id="871764064366395483" id="message-871764064366395483" title="Message sent: 2021-08-02 14:39">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://www.gentlydownthe.stream/">https://www.gentlydownthe.stream/</a></span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="100">
+                                <img class="emoji emoji--small" alt="&#128175;" src="https://twemoji.maxcdn.com/2/svg/1f4af.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">5</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/80732956108263424/604eb246277ef3920f60feb2de136a33.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="sathyabhat#2391" style="">sathyabhat</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;871764064366395483&#39;)">
+<a href="https://www.gentlydownthe.stream/">https://www.gentlydownthe.stream/</a>                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 14:44</span>
+
+            <div class="chatlog__message " data-message-id="871765304596922468" id="message-871765304596922468" title="Message sent: 2021-08-02 14:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">You just made my day. This is the best damn example I have ever seen. Thank you!</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="pray_tone3">
+                                <img class="emoji emoji--small" alt="&#128591;&#127997;" src="https://twemoji.maxcdn.com/2/svg/1f64f-1f3fd.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/a_c49d35eec84ababe60712d3d19379666.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="WeblWabl#4200" data-user-id="262322025350168577" style="color: rgb(255,203,70)">webl.js // #banoffices #ecsgang</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 14:48</span>
+
+            <div class="chatlog__message " data-message-id="871766529010716732" id="message-871766529010716732" title="Message sent: 2021-08-02 14:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Awesome, I&#39;m going to check out the link sent as well</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Snowie (D4rk)#0116" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;871760909524168744&#39;)">
+Kafka is similar to many other message queues. If you&#39;ve ever used rabbit MQ or active MQ or such, Kafka has a lot of the same features. Kafka has some serious advantages imo and is my preferred one. It&#39;s far more/easier to scale and has really high performance using partitions and whatnot. Also instead of the ack style system, messages can be stored for an indefinite amount of time (I mean based on your memory / disk of course), and instead of a king you just move the message pointer forward, which allows for message replay and stuff                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 14:52</span>
+
+            <div class="chatlog__message " data-message-id="871767512419807232" id="message-871767512419807232" title="Message sent: 2021-08-02 14:52">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I would argue that Kafka is not a message queue, it is more of an event system. The difference being that message queues do not hold messages indefinitely, they pass it to down steam services then forget about it. These are transient systems that dont store data long term.
+But in a event system events are stored indefinitely, basically like an append only database. Then downstream services can read all of some of these events off the steam as they need to and often watch the streams for new messages to process as they arrive.
+The big key difference is where the source of truth lives. In message queues the message is passed downstream where downstream is eventually responsible for it. But in event systems the system (like kafka) is responsible for all messages. So downstream dont need to store and data long term (though they often cache it) and can rebuild their caches by rereading the whole event queue again. Which is not possible in a typical message queue system.</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="100">
+                                <img class="emoji emoji--small" alt="&#128175;" src="https://twemoji.maxcdn.com/2/svg/1f4af.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 14:55</span>
+
+            <div class="chatlog__message " data-message-id="871768203892781086" id="message-871768203892781086" title="Message sent: 2021-08-02 14:55">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I mean yes, I was simplifying xD. 
+You can use Kafka as a simple message queue but most message queues are not good for long-term event storage</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871768242560065609" id="message-871768242560065609" title="Message sent: 2021-08-02 14:55">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">But yeah the rebuilding stage is one of the most useful parts, as well as being able to rerun events in the case of having to roll back a database or something else</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-08-02 14:56">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 14:59</span>
+
+            <div class="chatlog__message " data-message-id="871769239172808735" id="message-871769239172808735" title="Message sent: 2021-08-02 14:59">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Using the correct terms though is important here. You will get a lot more relevant results searching for <span class="pre pre--inline">event system</span> than <span class="pre pre--inline">message queue</span> as these are two similar but distinct patterns used.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871769377815535696" id="message-871769377815535696" title="Message sent: 2021-08-02 15:00">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><em>And while we are mentioning keywords CQRS (command query responsibility segregation) is one to look up while learning about event systems</em></span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-08-02 15:00">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871770100640919552" id="message-871770100640919552" title="Message sent: 2021-08-02 15:03">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://www.youtube.com/watch?v=uTCKzPg0Uak">https://www.youtube.com/watch?v=uTCKzPg0Uak</a> is a good talk about event systems and cqrs pattern</span>
+
+                        </div>
+                    </div>
+
+
+                    <div class="chatlog__embed">
+                            <div class="chatlog__embed-color-pill" style="background-color: rgba(255,0,0,255)"></div>
+
+                        <div class="chatlog__embed-content-container">
+                            <div class="chatlog__embed-content">
+                                <div class="chatlog__embed-text">
+                                        <div class="chatlog__embed-author">
+
+                                                <span class="chatlog__embed-author-name">
+                                                        <a class="chatlog__embed-author-name-link" href="https://www.youtube.com/channel/UCdDhYMT2USoLdh4SZIsu_1g">Oracle Developers</a>
+                                                </span>
+                                        </div>
+
+                                        <div class="chatlog__embed-title">
+                                                <a class="chatlog__embed-title-link" href="https://www.youtube.com/watch?v=uTCKzPg0Uak">
+                                                    <div class="markdown preserve-whitespace">When, Why, and How to CQRS</div>
+                                                </a>
+                                        </div>
+
+                                        <div class="chatlog__embed-youtube-container">
+                                            <iframe class="chatlog__embed-youtube" src="https://www.youtube.com/embed/uTCKzPg0Uak" width="400" height="225"></iframe>
+                                        </div>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                    </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 15:29</span>
+
+            <div class="chatlog__message " data-message-id="871776813867733042" id="message-871776813867733042" title="Message sent: 2021-08-02 15:29">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Or better introduction to event sources in general: <a href="https://www.youtube.com/watch?v=rUDN40rdly8">https://www.youtube.com/watch?v=rUDN40rdly8</a></span>
+
+                        </div>
+                    </div>
+
+
+                    <div class="chatlog__embed">
+                            <div class="chatlog__embed-color-pill" style="background-color: rgba(255,0,0,255)"></div>
+
+                        <div class="chatlog__embed-content-container">
+                            <div class="chatlog__embed-content">
+                                <div class="chatlog__embed-text">
+                                        <div class="chatlog__embed-author">
+
+                                                <span class="chatlog__embed-author-name">
+                                                        <a class="chatlog__embed-author-name-link" href="https://www.youtube.com/channel/UCtxCXg-UvSnTKPOzLH4wJaQ">Coding Tech</a>
+                                                </span>
+                                        </div>
+
+                                        <div class="chatlog__embed-title">
+                                                <a class="chatlog__embed-title-link" href="https://www.youtube.com/watch?v=rUDN40rdly8">
+                                                    <div class="markdown preserve-whitespace">Design Patterns: Why Event Sourcing?</div>
+                                                </a>
+                                        </div>
+
+                                        <div class="chatlog__embed-youtube-container">
+                                            <iframe class="chatlog__embed-youtube" src="https://www.youtube.com/embed/rUDN40rdly8" width="400" height="225"></iframe>
+                                        </div>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                    </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(6,227,236)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 15:54</span>
+
+            <div class="chatlog__message " data-message-id="871782958191742976" id="message-871782958191742976" title="Message sent: 2021-08-02 15:54">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I&#39;m curious to hear from people here about how they use Kafka in their environment. Real world application.
+
+We mostly use Kafka as part of a large ELK pipeline; however, it&#39;s used in some other applications as well. Id say at least 2-5TB of messages a day... Rough estimate</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-08-02 15:54">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/216651123698696204/851ff3e31924e7c2d03efefaf323e42e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="bees#3810" data-user-id="216651123698696204" style="color: rgb(240,183,179)">bees</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 16:03</span>
+
+            <div class="chatlog__message " data-message-id="871785287062278246" id="message-871785287062278246" title="Message sent: 2021-08-02 16:03">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">At a previous job, we used Kafka as the main event bus for integrations between SIEM providers</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-08-02 16:13">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871785327541501993" id="message-871785327541501993" title="Message sent: 2021-08-02 16:03">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Both within customer deployments, and internally</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871785458609291266" id="message-871785458609291266" title="Message sent: 2021-08-02 16:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://www.opendxl.com/">https://www.opendxl.com/</a></span>
+
+                        </div>
+                    </div>
+
+
+                    <div class="chatlog__embed">
+                            <div class="chatlog__embed-color-pill" style="background-color: rgba(36,82,105,255)"></div>
+
+                        <div class="chatlog__embed-content-container">
+                            <div class="chatlog__embed-content">
+                                <div class="chatlog__embed-text">
+
+                                        <div class="chatlog__embed-title">
+                                                <a class="chatlog__embed-title-link" href="https://www.opendxl.com/">
+                                                    <div class="markdown preserve-whitespace">OpenDXL</div>
+                                                </a>
+                                        </div>
+
+                                        <div class="chatlog__embed-description">
+                                            <div class="markdown preserve-whitespace">OpenDXL is an initiative to create adaptive systems of interconnected services that communicate and share information for real-time, accurate security decisions and actions</div>
+                                        </div>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                    </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Nous#2788" style="color: rgb(240,183,179)">Nous</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;871767512419807232&#39;)">
+I would argue that Kafka is not a message queue, it is more of an event system. The difference being that message queues do not hold messages indefinitely, they pass it to down steam services then forget about it. These are transient systems that dont store data long term.
+But in a event system events are stored indefinitely, basically like an append only database. Then downstream services can read all of some of these events off the steam as they need to and often watch the streams for new messages to process as they arrive.
+The big key difference is where the source of truth lives. In message queues the message is passed downstream where downstream is eventually responsible for it. But in event systems the system (like kafka) is responsible for all messages. So downstream dont need to store and data long term (though they often cache it) and can rebuild their caches by rereading the whole event queue again. Which is not possible in a typical message queue system.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 16:11</span>
+
+            <div class="chatlog__message " data-message-id="871787327083675648" id="message-871787327083675648" title="Message sent: 2021-08-02 16:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">How would be classified celery then?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871787551655088209" id="message-871787551655088209" title="Message sent: 2021-08-02 16:12">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I think it would be msg queue, right?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Darkwind#7896" style="">Darkwind</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;871787327083675648&#39;)">
+How would be classified celery then?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 16:27</span>
+
+            <div class="chatlog__message " data-message-id="871791296858189905" id="message-871791296858189905" title="Message sent: 2021-08-02 16:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Looks like it is a library that is backed by a message queue like rabbitMQ, redis or amazon sqs.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(6,227,236)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 16:27</span>
+
+            <div class="chatlog__message " data-message-id="871791350654324817" id="message-871791350654324817" title="Message sent: 2021-08-02 16:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Doesn&#39;t celery produce to something like rabbitmq</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871791415171108924" id="message-871791415171108924" title="Message sent: 2021-08-02 16:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah what nous said</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 16:30</span>
+
+            <div class="chatlog__message " data-message-id="871792116899135498" id="message-871792116899135498" title="Message sent: 2021-08-02 16:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">all right. Then i have msg queue in my sleeve
+Kafka would be a thing to learn later as alternative type of technology (even system)</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-08-02 16:30">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871792311649063005" id="message-871792311649063005" title="Message sent: 2021-08-02 16:31">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">or may be to try getting a bit more understanding how Kafka works</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871792388434186270" id="message-871792388434186270" title="Message sent: 2021-08-02 16:31">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">in order to realize if perhaps it is needed technology and I just don&#39;t get it how it can be applied? <img loading="lazy" class="emoji " alt="🤔" title="thinking" src="https://twemoji.maxcdn.com/2/svg/1f914.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871792652872478761" id="message-871792652872478761" title="Message sent: 2021-08-02 16:32">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">hmm, what&#39;s the point of having ability to re read event queue</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871792963435507712" id="message-871792963435507712" title="Message sent: 2021-08-02 16:33">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">why would I wish to store my tasks indefinitely amount of time?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 16:34</span>
+
+            <div class="chatlog__message " data-message-id="871792989737984030" id="message-871792989737984030" title="Message sent: 2021-08-02 16:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Might help to watch that last talk listed above which shows some of the benefits to event sourced systems vs traditional SQL databases. And that is IMO a better comparison then comparing it to a simple message queue. It might work in a similar way to a message queue - but it really acts more like a database storing the events placed into it long term.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 16:34</span>
+
+            <div class="chatlog__message " data-message-id="871793174190895157" id="message-871793174190895157" title="Message sent: 2021-08-02 16:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">database of events, hmm</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 16:37</span>
+
+            <div class="chatlog__message " data-message-id="871793738987503646" id="message-871793738987503646" title="Message sent: 2021-08-02 16:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">This is great for adhoc queries later on as the event system does not lose any data (it is append only, unlike databases CRUD databases which modify things). So you can query it at any point in the future at any time in the event and get the same result back no matter what happened after the points on intrest.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(6,227,236)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 16:37</span>
+
+            <div class="chatlog__message " data-message-id="871793748839915520" id="message-871793748839915520" title="Message sent: 2021-08-02 16:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I&#39;ve managed Kafka in terms of scaling the architecture and whatnot, but I&#39;m curious of the fine tunings of it. Like what dictates how you size Kafka partitions vs just horizontally scaling the cluster. We have a partition size by region.. But I&#39;m curious how that size is even determined.</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-08-02 16:37">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 16:38</span>
+
+            <div class="chatlog__message " data-message-id="871794092760252437" id="message-871794092760252437" title="Message sent: 2021-08-02 16:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Note that kube is essentially a event based system.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 16:42</span>
+
+            <div class="chatlog__message " data-message-id="871795112903053392" id="message-871795112903053392" title="Message sent: 2021-08-02 16:42">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://www.gentlydownthe.stream/">https://www.gentlydownthe.stream/</a>
+This is a really cool explanation of Kafka</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871795134021369906" id="message-871795134021369906" title="Message sent: 2021-08-02 16:42">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">it could be pinned <img loading="lazy" class="emoji " alt="😉" title="wink" src="https://twemoji.maxcdn.com/2/svg/1f609.svg"></span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-08-02 16:43">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(6,227,236)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 16:43</span>
+
+            <div class="chatlog__message " data-message-id="871795322702168104" id="message-871795322702168104" title="Message sent: 2021-08-02 16:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It&#39;s in <span class="mention">#&#128218;-resources</span> . This channel will be deleted, so pinning here wouldn&#39;t make sense</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871795455728705536" id="message-871795455728705536" title="Message sent: 2021-08-02 16:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">But again, you can view this channel from our archive after it&#39;s deleted</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/233679692694159360/a7718a515a668c20f7fb15e407e31171.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="fraud#3693" data-user-id="233679692694159360" style="">(fraud (god tier sre))™ #devgang</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 18:47</span>
+
+            <div class="chatlog__message " data-message-id="871826607831138324" id="message-871826607831138324" title="Message sent: 2021-08-02 18:47">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">my thoughts RE kafka: kafka is really cool and def the defacto standard for pubsub/messaging queues but it does incur a LOT of operational (and development) complexity. I think w/ RabbitMQ and cloud provider&#39;s various pub/sub systems it&#39;s now a little more &quot;old school&quot; but seems like a more viable option when you hit a certain throughput (in regards to scale and budget both).  However, I&#39;ve only used RabbitMQ&#39;s and aws/gcp/azure&#39;s pub sub versions of producer/consumers and not sure if they have streams built in -- which is a big pro of kafka -- it&#39;s centralized into a single service rather than parted out into multiple.
+
+Nitpick: if you have a Java or language-androgynous stack kafka is a little easier to work into your ecosystem, but if you&#39;re sold on something like Go (or specifically a language thats NOT java due to the baggage that comes with it) you kind of have to suck it up and do some java-operations stuff as it pertains to operating a java service.
+
+Neither-here-nor-there: Kafka forces you to setup zookeeper which could be pro if you want to centralize your config management, if not, it&#39;s just another dependency you need to manage that comes with the system up front
+
+What I would do: use a managed kafka service like MSK</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 20:28</span>
+
+            <div class="chatlog__message " data-message-id="871852051154485298" id="message-871852051154485298" title="Message sent: 2021-08-02 20:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">If I understand correctly it mostly equivalent as AWS SNS but with replayability? Or does it more look like sqs or kinesis?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 20:32</span>
+
+            <div class="chatlog__message " data-message-id="871852921422217266" id="message-871852921422217266" title="Message sent: 2021-08-02 20:32">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">AWS have a managed project for it as it is not quite the same <a href="https://aws.amazon.com/msk/">https://aws.amazon.com/msk/</a></span>
+
+                        </div>
+                    </div>
+
+
+                    <div class="chatlog__embed">
+                            <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                        <div class="chatlog__embed-content-container">
+                            <div class="chatlog__embed-content">
+                                <div class="chatlog__embed-text">
+
+                                        <div class="chatlog__embed-title">
+                                                <a class="chatlog__embed-title-link" href="https://aws.amazon.com/msk/">
+                                                    <div class="markdown preserve-whitespace">Amazon MSK - Managed Streaming For Apache Kafka - Amazon Web Services</div>
+                                                </a>
+                                        </div>
+
+                                        <div class="chatlog__embed-description">
+                                            <div class="markdown preserve-whitespace">With Amazon MSK you can build and run real-time apps that use Apache Kafka for streaming data pipelines, real-time data processing, and powering machine learning and analytics applications.</div>
+                                        </div>
+
+                                </div>
+
+                                    <div class="chatlog__embed-thumbnail-container">
+                                        <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/CgR6hWS0qQYHmffdya8-cZa4tt2PlELLuGT3J5a9pFg/https/a0.awsstatic.com/libra-css/images/logos/aws_logo_smile_179x109.png">
+                                            <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/CgR6hWS0qQYHmffdya8-cZa4tt2PlELLuGT3J5a9pFg/https/a0.awsstatic.com/libra-css/images/logos/aws_logo_smile_179x109.png" alt="Thumbnail" loading="lazy">
+                                        </a>
+                                    </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 20:32</span>
+
+            <div class="chatlog__message " data-message-id="871853065089712139" id="message-871853065089712139" title="Message sent: 2021-08-02 20:32">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">i mean they are all pretty similar - at the end of the day, it is a way to distribute message around. Kafka has some special designs that make it better for event systems, like the replayability factor. ActiveMQ (which is basically SQS) and rabbitmq can effectivly do all the same things, they just have slightly different goals</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871853386604093550" id="message-871853386604093550" title="Message sent: 2021-08-02 20:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">personally Kafka is my favorite queue system, although rabbitmq is def up there to. I find that rabbitmq starts struggling in larger deployments, or when you are doing streamed data. Kafka because of its pointer byte system, allows you to easily stream large sets of data (terabytes even if you wanted to) to consumers, with really very little problem - which makes it pretty ideal for like video or audio trascoding or the like.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 21:16</span>
+
+            <div class="chatlog__message " data-message-id="871864006405656626" id="message-871864006405656626" title="Message sent: 2021-08-02 21:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I am certainly interested, any personal project ideas with Kafka anyone?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(6,227,236)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-08-02 21:25</span>
+
+            <div class="chatlog__message " data-message-id="871866428226162780" id="message-871866428226162780" title="Message sent: 2021-08-02 21:25">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I found some Kafka related tools <a href="https://awesomeopensource.com/projects/apache-kafka">https://awesomeopensource.com/projects/apache-kafka</a></span>
+
+                        </div>
+                    </div>
+
+
+                    <div class="chatlog__embed">
+                            <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                        <div class="chatlog__embed-content-container">
+                            <div class="chatlog__embed-content">
+                                <div class="chatlog__embed-text">
+
+                                        <div class="chatlog__embed-title">
+                                                <a class="chatlog__embed-title-link" href="https://awesomeopensource.com/projects/apache-kafka">
+                                                    <div class="markdown preserve-whitespace">The Top 39 Apache Kafka Open Source Projects</div>
+                                                </a>
+                                        </div>
+
+                                        <div class="chatlog__embed-description">
+                                            <div class="markdown preserve-whitespace">Browse The Most Popular 39 Apache Kafka Open Source Projects</div>
+                                        </div>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                    </div>
+
+            </div>
+            <div class="chatlog__message " data-message-id="871866853465673768" id="message-871866853465673768" title="Message sent: 2021-08-02 21:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Quick projects? Maybe. This guy&#39;s answer makes sense <a href="https://www.quora.com/What-is-a-good-small-project-for-Kafka-and-Storm">https://www.quora.com/What-is-a-good-small-project-for-Kafka-and-Storm</a></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="871867355460931695" id="message-871867355460931695" title="Message sent: 2021-08-02 21:29">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Worth a read <a href="https://www.tutorialspoint.com/apache_kafka/apache_kafka_quick_guide.htm">https://www.tutorialspoint.com/apache_kafka/apache_kafka_quick_guide.htm</a></span>
+
+                        </div>
+                    </div>
+
+
+                    <div class="chatlog__embed">
+                            <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                        <div class="chatlog__embed-content-container">
+                            <div class="chatlog__embed-content">
+                                <div class="chatlog__embed-text">
+
+                                        <div class="chatlog__embed-title">
+                                                <a class="chatlog__embed-title-link" href="https://www.tutorialspoint.com/apache_kafka/apache_kafka_quick_guide.htm">
+                                                    <div class="markdown preserve-whitespace">Apache Kafka - Quick Guide - Tutorialspoint</div>
+                                                </a>
+                                        </div>
+
+                                        <div class="chatlog__embed-description">
+                                            <div class="markdown preserve-whitespace">Apache Kafka - Quick Guide - In Big Data, an enormous volume of data is used. Regarding data, we have two main challenges.The first challenge is how to collect large volume of data and the</div>
+                                        </div>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                    </div>
+
+            </div>
+            <div class="chatlog__message " data-message-id="871867720608665611" id="message-871867720608665611" title="Message sent: 2021-08-02 21:31">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Kafka used at my company <a href="https://eng.uber.com/kafka/">https://eng.uber.com/kafka/</a></span>
+
+                        </div>
+                    </div>
+
+
+                    <div class="chatlog__embed">
+                            <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                        <div class="chatlog__embed-content-container">
+                            <div class="chatlog__embed-content">
+                                <div class="chatlog__embed-text">
+                                        <div class="chatlog__embed-author">
+
+                                                <span class="chatlog__embed-author-name">
+                                                        <a class="chatlog__embed-author-name-link" href="https://eng.uber.com/author/yupeng-fu/">Yupeng Fu</a>
+                                                </span>
+                                        </div>
+
+                                        <div class="chatlog__embed-title">
+                                                <a class="chatlog__embed-title-link" href="https://eng.uber.com/kafka/">
+                                                    <div class="markdown preserve-whitespace">Disaster Recovery for Multi-Region Kafka at Uber</div>
+                                                </a>
+                                        </div>
+
+                                        <div class="chatlog__embed-description">
+                                            <div class="markdown preserve-whitespace">Apache Kafka at Uber Uber has one of the largest deployments of Apache Kafka in the world, processing trillions of messages and multiple petabytes of data per day. As Figure 1 shows, today we position Apache Kafka as a cornerstone to Uber’s technology stack and build a complex ecosystem on top of it to empower a large number of different workflo...</div>
+                                        </div>
+
+                                </div>
+
+                                    <div class="chatlog__embed-thumbnail-container">
+                                        <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/UWqgHkZz6zpGbnD3d8B91dHa4AgrL55vS4d3ARFepeg/https/eng.uber.com/wp-content/uploads/2020/12/pasted-image-0-14.png">
+                                            <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/UWqgHkZz6zpGbnD3d8B91dHa4AgrL55vS4d3ARFepeg/https/eng.uber.com/wp-content/uploads/2020/12/pasted-image-0-14.png" alt="Thumbnail" loading="lazy">
+                                        </a>
+                                    </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="thumbsup">
+                                <img class="emoji emoji--small" alt="&#128077;" src="https://twemoji.maxcdn.com/2/svg/1f44d.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">2</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/80732956108263424/604eb246277ef3920f60feb2de136a33.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="sathyabhat#2391" style="">sathyabhat</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;871764064366395483&#39;)">
+<a href="https://www.gentlydownthe.stream/">https://www.gentlydownthe.stream/</a>                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her]</span>
+
+
+        <span class="chatlog__timestamp">2021-08-03 03:04</span>
+
+            <div class="chatlog__message " data-message-id="871951754302980146" id="message-871951754302980146" title="Message sent: 2021-08-03 03:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">That&#39;s adorable... and informative too!</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="slight_smile">
+                                <img class="emoji emoji--small" alt="&#128578;" src="https://twemoji.maxcdn.com/2/svg/1f642.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+            <div class="chatlog__message " data-message-id="871952932113891368" id="message-871952932113891368" title="Message sent: 2021-08-03 03:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Even bonus art cute</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Snowie (D4rk)#0116" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;871765304596922468&#39;)">
+You just made my day. This is the best damn example I have ever seen. Thank you!                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/234812423746486274/a_ca3799a9469fdf6bfad16fa046346a5d.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Rat#2957" data-user-id="234812423746486274" style="color: rgb(254,95,85)">O(logn) #logarithmicgang #gogang</span>
+
+
+        <span class="chatlog__timestamp">2021-08-03 14:33</span>
+
+            <div class="chatlog__message " data-message-id="872124978307432459" id="message-872124978307432459" title="Message sent: 2021-08-03 14:33">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">me too</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/162190760978939905/850fed97f9f714023623db5fa041fc1e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Silva#1498" data-user-id="162190760978939905" style="">Silva</span>
+
+
+        <span class="chatlog__timestamp">2021-08-04 07:03</span>
+
+            <div class="chatlog__message " data-message-id="872374182707613747" id="message-872374182707613747" title="Message sent: 2021-08-04 07:03">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">ou yeah, kafka <img loading="lazy" class="emoji " alt="😄" title="smile" src="https://twemoji.maxcdn.com/2/svg/1f604.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="872374231516708864" id="message-872374231516708864" title="Message sent: 2021-08-04 07:03">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">send the gently link to colleagues, they said: its very well explained and nice made</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/2.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="rainbows#8637" data-user-id="543678675531333632" style="">rainbows</span>
+
+
+        <span class="chatlog__timestamp">2021-08-07 09:22</span>
+
+            <div class="chatlog__message " data-message-id="873496189474054166" id="message-873496189474054166" title="Message sent: 2021-08-07 09:22">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention" title="Darkwind#7896">@Darkwind</span> thanks. This illustrator book is good.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/494528735446564865/0b1e8605cd1a3cec0087cad96347fdc8.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="theo123490#7127" data-user-id="494528735446564865" style="">theo123490</span>
+
+
+        <span class="chatlog__timestamp">2021-08-07 20:36</span>
+
+            <div class="chatlog__message " data-message-id="873665953928462406" id="message-873665953928462406" title="Message sent: 2021-08-07 20:36">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">That is the best kafka explanation  I have ever seen</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/494528735446564865/0b1e8605cd1a3cec0087cad96347fdc8.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="theo123490#7127" style="">theo123490</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;873665953928462406&#39;)">
+That is the best kafka explanation  I have ever seen                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(6,227,236)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-08-07 20:43</span>
+
+            <div class="chatlog__message " data-message-id="873667644258144318" id="message-873667644258144318" title="Message sent: 2021-08-07 20:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Which one</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/494528735446564865/0b1e8605cd1a3cec0087cad96347fdc8.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="theo123490#7127" data-user-id="494528735446564865" style="">theo123490</span>
+
+
+        <span class="chatlog__timestamp">2021-08-07 20:43</span>
+
+            <div class="chatlog__message " data-message-id="873667790974902292" id="message-873667790974902292" title="Message sent: 2021-08-07 20:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">The illustrator book one</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/284721708320030724/d720ede1a028552dd4f7897b5ec0e227.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="superstraddle#6253" data-user-id="284721708320030724" style="">superstraddle</span>
+
+
+        <span class="chatlog__timestamp">2021-08-08 06:59</span>
+
+            <div class="chatlog__message " data-message-id="873822812496883712" id="message-873822812496883712" title="Message sent: 2021-08-08 06:59">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Hello. Are channels like this one archived anywhere?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/284721708320030724/d720ede1a028552dd4f7897b5ec0e227.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="superstraddle#6253" style="">superstraddle</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;873822812496883712&#39;)">
+Hello. Are channels like this one archived anywhere?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(6,227,236)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-08-08 07:12</span>
+
+            <div class="chatlog__message " data-message-id="873826097635131422" id="message-873826097635131422" title="Message sent: 2021-08-08 07:12">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">what do you mean?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="873826184243327016" id="message-873826184243327016" title="Message sent: 2021-08-08 07:13">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">All topic of the week channels are archived, yes</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="873826305215455262" id="message-873826305215455262" title="Message sent: 2021-08-08 07:13">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">The link to each archive is linked the week after in <span class="mention">#&#128206;topic-of-the-week</span></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/284721708320030724/d720ede1a028552dd4f7897b5ec0e227.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="superstraddle#6253" data-user-id="284721708320030724" style="">superstraddle</span>
+
+
+        <span class="chatlog__timestamp">2021-08-08 07:18</span>
+
+            <div class="chatlog__message " data-message-id="873827611057475605" id="message-873827611057475605" title="Message sent: 2021-08-08 07:18">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">You got what I meant. <img loading="lazy" class="emoji " alt="🙂" title="slight_smile" src="https://twemoji.maxcdn.com/2/svg/1f642.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="873827629332041748" id="message-873827629332041748" title="Message sent: 2021-08-08 07:19">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Thanks.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(6,227,236)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-08-08 07:21</span>
+
+            <div class="chatlog__message " data-message-id="873828346524479550" id="message-873828346524479550" title="Message sent: 2021-08-08 07:21">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">sure thing!</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+</div>
+
+<div class="postamble">
+    <div class="postamble__entry">Exported 65 message(s)</div>
+</div>
+
+</body>
+
+</html>
