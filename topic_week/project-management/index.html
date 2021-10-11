@@ -1,0 +1,2427 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>DevOps, SRE, &amp; Infrastructure - project-management</title>
+    <meta charset="utf-8">
+    <link rel="icon" 
+      type="image/png" 
+      href="../../favicon.ico">
+    <meta name="viewport" content="width=device-width">
+
+    <style>
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-300.woff);
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-400.woff);
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-500.woff);
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-600.woff);
+            font-weight: 600;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-700.woff);
+            font-weight: 700;
+        }
+
+        body {
+            background-color: #36393e;
+            color: #dcddde;
+            font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+        }
+
+        a {
+            color: #00aff4;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        img {
+            object-fit: contain;
+        }
+
+        .markdown {
+            max-width: 100%;
+            line-height: 1.3;
+            overflow-wrap: break-word;
+        }
+
+        .preserve-whitespace {
+            white-space: pre-wrap;
+        }
+
+        .spoiler-text {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .spoiler-text--hidden {
+            cursor: pointer;
+            background-color: #202225;
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .spoiler-text--hidden:hover {
+            background-color: rgba(32, 34, 37, 0.8);
+        }
+
+        .spoiler-text--hidden::selection {
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .quote {
+            display: flex;
+            margin: 0.05em 0;
+        }
+
+        .quote::before {
+            content: "";
+            margin-right: 0.5em;
+            border: 2px solid #4f545c;
+            border-radius: 3px;
+        }
+
+        .pre {
+            background-color: #2f3136;
+            font-family: "Consolas", "Courier New", Courier, monospace;
+        }
+
+        .pre--multiline {
+            margin-top: 0.25em;
+            padding: 0.5em;
+            border: 2px solid #282b30;
+            border-radius: 5px;
+            color: #b9bbbe;
+        }
+
+        .pre--multiline.hljs {
+            background-color: #2f3136;
+            color: #b9bbbe;
+        }
+
+        .pre--inline {
+            padding: 2px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        .mention {
+            border-radius: 3px;
+            padding: 0 2px;
+            color: #7289da;
+            background-color: rgba(114, 137, 218, .1);
+            font-weight: 500;
+        }
+
+        .timestamp {
+            border-radius: 3px;
+            padding: 0 2px;
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .emoji {
+            width: 1.325em;
+            height: 1.325em;
+            margin: 0 0.06em;
+            vertical-align: -0.4em;
+        }
+
+        .emoji--small {
+            width: 1em;
+            height: 1em;
+        }
+
+        .emoji--large {
+            width: 2.8em;
+            height: 2.8em;
+        }
+
+        .preamble {
+            display: grid;
+            margin: 0 0.3em 0.6em 0.3em;
+            max-width: 100%;
+            grid-template-columns: auto 1fr;
+        }
+
+        .preamble__guild-icon-container {
+            grid-column: 1;
+        }
+
+        .preamble__guild-icon {
+            max-width: 88px;
+            max-height: 88px;
+        }
+
+        .preamble__entries-container {
+            grid-column: 2;
+            margin-left: 0.6em;
+        }
+
+        .preamble__entry {
+            font-size: 1.4em;
+            color: #ffffff;
+        }
+
+        .preamble__entry--small {
+            font-size: 1em;
+        }
+
+        .chatlog {
+            max-width: 100%;
+        }
+
+        .chatlog__message-group {
+            display: grid;
+            margin: 0 0.6em;
+            padding: 0.9em 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            grid-template-columns: auto 1fr;
+        }
+
+        .chatlog__reference-symbol {
+            grid-column: 1;
+            margin: 8px 4px 4px 18px;
+            border-left: 2px solid #4f545c;
+            border-top: 2px solid #4f545c;
+            border-radius: 8px 0 0 0;
+        }
+
+        .chatlog__reference {
+            display: flex;
+            grid-column: 2;
+            margin-bottom: 0.25em;
+            font-size: 0.875em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            align-items: center;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-avatar {
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            margin-right: 0.25em;
+        }
+
+        .chatlog__reference-name {
+            margin-right: 0.3em;
+            font-weight: 600;
+        }
+
+        .chatlog__reference-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__reference-content a:hover {
+            text-decoration: none;
+        }
+
+        .chatlog__reference-link {
+            cursor: pointer;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-link * {
+            display: inline;
+            pointer-events: none;
+        }
+
+        .chatlog__reference-link:hover {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-link:hover *:not(.spoiler-text) {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-edited-timestamp {
+            margin-left: 0.25em;
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__author-avatar-container {
+            grid-column: 1;
+            width: 40px;
+            height: 40px;
+            margin-right: 16px;
+        }
+
+        .chatlog__author-avatar {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+
+        .chatlog__messages {
+            grid-column: 2;
+            min-width: 50%;
+        }
+
+        .chatlog__author-name {
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .chatlog__timestamp {
+            margin-left: 0.3em;
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__message {
+            padding: 0.1em 0.3em;
+            margin: 0 -0.3em;
+            background-color: transparent;
+            transition: background-color 1s ease;
+        }
+
+        .chatlog__message--highlighted {
+            background-color: rgba(114, 137, 218, 0.2);
+        }
+
+        .chatlog__message--pinned {
+            background-color: rgba(249, 168, 37, 0.05);
+        }
+
+        .chatlog__content {
+            font-size: 0.95em;
+            word-wrap: break-word;
+        }
+
+        .chatlog__edited-timestamp {
+            margin-left: 0.15em;
+            font-size: 0.8em;
+        }
+
+        .chatlog__attachment {
+            display: inline-block;
+            position: relative;
+            margin-top: 0.3em;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden {
+            cursor: pointer;
+            box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .chatlog__attachment--hidden * {
+            pointer-events: none;
+        }
+
+        .chatlog__attachment-spoiler-caption {
+            display: none;
+            z-index: 999;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 0.4em 0.8em;
+            background-color: rgba(0, 0, 0, 0.9);
+            border-radius: 20px;
+            color: #dcddde;
+            font-size: 0.9em;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-spoiler-caption {
+            display: block;
+        }
+
+        .chatlog__attachment--hidden:hover .chatlog__attachment-spoiler-caption {
+            color: #fff;
+        }
+
+        .chatlog__attachment-media {
+            vertical-align: top;
+            max-width: 45vw;
+            max-height: 500px;
+            border-radius: 3px;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-media {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic {
+            width: 100%;
+            max-width: 520px;
+            height: 40px;
+            padding: 10px;
+            background-color: #2f3136;
+            border: 1px solid #292b2f;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-generic {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic-icon {
+            float: left;
+            width: 30px;
+            height: 100%;
+            margin-right: 10px;
+        }
+
+        .chatlog__attachment-generic-size {
+            color: #72767d;
+            font-size: 12px;
+        }
+
+        .chatlog__attachment-generic-name {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__edited-timestamp {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__embed {
+            display: flex;
+            margin-top: 0.3em;
+            max-width: 520px;
+        }
+
+        .chatlog__embed-color-pill {
+            flex-shrink: 0;
+            width: 0.25em;
+            border-top-left-radius: 3px;
+            border-bottom-left-radius: 3px;
+        }
+
+        .chatlog__embed-color-pill--default {
+            background-color: #202225;
+        }
+
+        .chatlog__embed-content-container {
+            display: flex;
+            flex-direction: column;
+            padding: 0.5em 0.6em;
+            background-color: rgba(46, 48, 54, 0.3);
+            border: 1px solid rgba(46, 48, 54, 0.6);
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        .chatlog__embed-content {
+            display: flex;
+            width: 100%;
+        }
+
+        .chatlog__embed-text {
+            flex: 1;
+        }
+
+        .chatlog__embed-author {
+            display: flex;
+            margin-bottom: 0.3em;
+            align-items: center;
+        }
+
+        .chatlog__embed-author-icon {
+            margin-right: 0.5em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .chatlog__embed-author-name {
+            font-size: 0.875em;
+            font-weight: 600;
+            color: #ffffff
+        }
+
+        .chatlog__embed-author-name-link {
+            color: #ffffff;
+        }
+
+        .chatlog__embed-title {
+            margin-bottom: 0.2em;
+            font-size: 0.875em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-description {
+            font-weight: 500;
+            font-size: 0.85em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0 0.5em;
+        }
+
+        .chatlog__embed-field {
+            flex: 0;
+            min-width: 100%;
+            max-width: 506px;
+            padding-top: 0.6em;
+            font-size: 0.875em;
+        }
+
+        .chatlog__embed-field--inline {
+            flex: 1;
+            flex-basis: auto;
+            min-width: 150px;
+        }
+
+        .chatlog__embed-field-name {
+            margin-bottom: 0.2em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-field-value {
+            font-weight: 500;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-thumbnail {
+            flex: 0;
+            margin-left: 1.2em;
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-image-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-image {
+            max-width: 500px;
+            max-height: 400px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-footer {
+            margin-top: 0.6em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-footer-icon {
+            margin-right: 0.2em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+
+        .chatlog__embed-footer-text {
+            vertical-align: middle;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        .chatlog__embed-plainimage {
+            vertical-align: top;
+            max-width: 45vw;
+            max-height: 500px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-spotify {
+            border: 0;
+        }
+
+        .chatlog__embed-youtube-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-youtube {
+            border: 0;
+            border-radius: 3px;
+        }
+
+        .chatlog__reactions {
+            display: flex;
+        }
+
+        .chatlog__reaction {
+            display: flex;
+            align-items: center;
+            margin: 0.35em 0.1em 0.1em 0.1em;
+            padding: 0.2em 0.35em;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .chatlog__reaction-count {
+            min-width: 9px;
+            margin-left: 0.35em;
+            font-size: 0.875em;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .chatlog__bot-tag {
+            position: relative;
+            top: -.1em;
+            margin-left: 0.3em;
+            padding: 0.05em 0.3em;
+            border-radius: 3px;
+            line-height: 1.3;
+            background-color: #5865F2;
+            color: #ffffff;
+            font-size: 0.625em;
+            font-weight: 500;
+        }
+
+        .postamble {
+            margin: 1.4em 0.3em 0.6em 0.3em;
+            padding: 1em;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .postamble__entry {
+            color: #ffffff;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/solarized-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.pre--multiline').forEach(block => hljs.highlightBlock(block));
+        });
+    </script>
+
+    <script>
+        function scrollToMessage(event, id) {
+            var element = document.getElementById('message-' + id);
+
+            if (element) {
+                event.preventDefault();
+
+                element.classList.add('chatlog__message--highlighted');
+
+                window.scrollTo({
+                    top: element.getBoundingClientRect().top - document.body.getBoundingClientRect().top - (window.innerHeight / 2),
+                    behavior: 'smooth'
+                });
+
+                window.setTimeout(function() {
+                    element.classList.remove('chatlog__message--highlighted');
+                }, 2000);
+            }
+        }
+
+        function showSpoiler(event, element) {
+            if (element && element.classList.contains('spoiler-text--hidden')) {
+                event.preventDefault();
+                element.classList.remove('spoiler-text--hidden');
+            }
+            if (element && element.classList.contains('chatlog__attachment--hidden')) {
+                event.preventDefault();
+                element.classList.remove('chatlog__attachment--hidden');
+            }
+        }
+    </script>
+
+    <svg style="display: none">
+        <symbol id="icon-attachment" viewBox="0 0 720 960">
+            <path fill="#f4f5fb" d="M50,935a25,25,0,0,1-25-25V50A25,25,0,0,1,50,25H519.6L695,201.32V910a25,25,0,0,1-25,25Z" />
+            <path fill="#7789c4" d="M509.21,50,670,211.63V910H50V50H509.21M530,0H50A50,50,0,0,0,0,50V910a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50h0V191Z" />
+            <path fill="#f4f5fb" d="M530,215a25,25,0,0,1-25-25V50a25,25,0,0,1,16.23-23.41L693.41,198.77A25,25,0,0,1,670,215Z" />
+            <path fill="#7789c4" d="M530,70.71,649.29,190H530V70.71M530,0a50,50,0,0,0-50,50V190a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50Z" />
+        </symbol>
+    </svg>
+</head>
+<body>
+
+<div class="preamble">
+    <div class="preamble__guild-icon-container">
+        <img class="preamble__guild-icon" src="https://cdn.discordapp.com/icons/419745677585940482/a_36f1bfe78afb2a86f04ecdaeeeedeccd.png" alt="Guild icon" loading="lazy">
+    </div>
+    <div class="preamble__entries-container">
+        <div class="preamble__entry">DevOps, SRE, &amp; Infrastructure</div>
+        <div class="preamble__entry">#project-management</div>
+
+            <div class="preamble__entry preamble__entry--small">Let&#39;s Discuss Project Management!</div>
+
+    </div>
+</div>
+
+<div class="chatlog">
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 05:22</span>
+
+            <div class="chatlog__message " data-message-id="894454336195792967" id="message-894454336195792967" title="Message sent: 2021-10-04 05:22">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">This week&#39;s topic of the week is Project management! How does everyone manage projects personally or professionally? Scrum/Agile? Waterfall? In your opinion, what is the best way to manage your projects? If you follow the scrum process, how long are your sprints? How many times a week does your team meet for planning? How much time in a week are you planning? Do you have an official dedicated scrum master? Let&#39;s discuss.
+
+ - Agile project management: <a href="https://www.pmi.org/learning/library/agile-project-management-mandate-changing-requirements-7043">https://www.pmi.org/learning/library/agile-project-management-mandate-changing-requirements-7043</a>
+ - Waterfall project management: <a href="https://www.workfront.com/project-management/methodologies/waterfall">https://www.workfront.com/project-management/methodologies/waterfall</a></span>
+
+                        </div>
+                    </div>
+
+                    <div class="chatlog__attachment " onclick="">
+
+                            <a href="https://cdn.discordapp.com/attachments/894451192275558430/894454336594272256/Banner_6.jpg">
+                                <img class="chatlog__attachment-media" src="https://cdn.discordapp.com/attachments/894451192275558430/894454336594272256/Banner_6.jpg" alt="Image attachment" title="Image: Banner_6.jpg (15.63 KB)" loading="lazy">
+                            </a>
+                    </div>
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="tada">
+                                <img class="emoji emoji--small" alt="&#127881;" src="https://twemoji.maxcdn.com/2/svg/1f389.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:14</span>
+
+            <div class="chatlog__message " data-message-id="894482667096117268" id="message-894482667096117268" title="Message sent: 2021-10-04 07:14">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Never follow waterfall project management. It is a terrible old process that resulted in all the year long release cycles, delayed and failed projects, never delivering things the client actually wanted and so many other problems. It is near impossible to design everything correctly upfront. Designs always change when you start implementing the project as you learn new things and requirements change as people learn what they actually want.</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="thumbsup">
+                                <img class="emoji emoji--small" alt="&#128077;" src="https://twemoji.maxcdn.com/2/svg/1f44d.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">3</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/273687438751301633/6988617a494c0cd3affb8926ae326ed3.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Marcus H#9589" data-user-id="273687438751301633" style="color: rgb(254,95,85)">Marcus H</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:16</span>
+
+            <div class="chatlog__message " data-message-id="894483178285318184" id="message-894483178285318184" title="Message sent: 2021-10-04 07:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Even the author of waterfall model has said that it does not work and should not be used</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894483192344616980" id="message-894483192344616980" title="Message sent: 2021-10-04 07:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">but humans be humans xD</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894483688853741609" id="message-894483688853741609" title="Message sent: 2021-10-04 07:18">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">we noticed scrum (eg 2 weeks sprints) is good for your average team in an average company, makes them more efficient</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894484635826937856" id="message-894484635826937856" title="Message sent: 2021-10-04 07:22">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">we also noticed Trello is better than Jira</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:22</span>
+
+            <div class="chatlog__message " data-message-id="894484652444753920" id="message-894484652444753920" title="Message sent: 2021-10-04 07:22">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Not a big fan of scrum myself. Though it works for some teams. I dislike planning a whole 2 weeks of work upfront. Much prefer just to have a continual backlog of work that gets organised every week or two - aka the kanban style.
+<a href="https://www.atlassian.com/agile/kanban/boards">https://www.atlassian.com/agile/kanban/boards</a></span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill" style="background-color: rgba(32,80,129,255)"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://www.atlassian.com/agile/kanban/boards">
+                                                        <div class="markdown preserve-whitespace">What is a Kanban Board? | Atlassian</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">A kanban board is a physical or digital project management tool designed to help visualize work, limit work-in-progress, and maximize efficiency(or flow).</div>
+                                            </div>
+
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="thumbsup">
+                                <img class="emoji emoji--small" alt="&#128077;" src="https://twemoji.maxcdn.com/2/svg/1f44d.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/273687438751301633/6988617a494c0cd3affb8926ae326ed3.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Marcus H#9589" data-user-id="273687438751301633" style="color: rgb(254,95,85)">Marcus H</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:23</span>
+
+            <div class="chatlog__message " data-message-id="894484744396488704" id="message-894484744396488704" title="Message sent: 2021-10-04 07:23">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">yes Nous because you are a high-performer</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="laughing">
+                                <img class="emoji emoji--small" alt="&#128518;" src="https://twemoji.maxcdn.com/2/svg/1f606.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+            <div class="chatlog__message " data-message-id="894484865351819314" id="message-894484865351819314" title="Message sent: 2021-10-04 07:23">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">for you scrums semi-artificial constraints are a hinderance</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894484979537559575" id="message-894484979537559575" title="Message sent: 2021-10-04 07:23">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">but for them average lazy bois scrum is good xD</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:25</span>
+
+            <div class="chatlog__message " data-message-id="894485318814810112" id="message-894485318814810112" title="Message sent: 2021-10-04 07:25">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">See I very very much prefer Jira over any other software we&#39;ve tried, mostly because we can do whatever we want with it. It&#39;s pricing is sometimes annoying tho</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-04 07:26">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/273687438751301633/6988617a494c0cd3affb8926ae326ed3.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Marcus H#9589" data-user-id="273687438751301633" style="color: rgb(254,95,85)">Marcus H</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:27</span>
+
+            <div class="chatlog__message " data-message-id="894485807438655530" id="message-894485807438655530" title="Message sent: 2021-10-04 07:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Jira is not slow for you? does the browser back button work for you?</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-04 07:27">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/273687438751301633/6988617a494c0cd3affb8926ae326ed3.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Marcus H#9589" style="color: rgb(254,95,85)">Marcus H</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;894484979537559575&#39;)">
+but for them average lazy bois scrum is good xD                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:27</span>
+
+            <div class="chatlog__message " data-message-id="894485870881677323" id="message-894485870881677323" title="Message sent: 2021-10-04 07:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">My old project manager used to describe scrum as <em>the training wheels of agile</em> <img loading="lazy" class="emoji " alt="😉" title="wink" src="https://twemoji.maxcdn.com/2/svg/1f609.svg"></span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-04 07:29">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="joy">
+                                <img class="emoji emoji--small" alt="&#128514;" src="https://twemoji.maxcdn.com/2/svg/1f602.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:27</span>
+
+            <div class="chatlog__message " data-message-id="894485959104671746" id="message-894485959104671746" title="Message sent: 2021-10-04 07:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I&#39;ve never really had speed issues on Jira, even in the thousands of open tickets and stuff</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894486019292925972" id="message-894486019292925972" title="Message sent: 2021-10-04 07:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It can sometimes be a little slower to load/render, but not tooo too bad</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:28</span>
+
+            <div class="chatlog__message " data-message-id="894486056290897971" id="message-894486056290897971" title="Message sent: 2021-10-04 07:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I find jira too complex. It does far too much, dont need most of what it does, Just something simple and strightforward.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:28</span>
+
+            <div class="chatlog__message " data-message-id="894486189506174996" id="message-894486189506174996" title="Message sent: 2021-10-04 07:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah I use a lot of the features that they have that others don&#39;t easily, so I much prefer it</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894486307064127529" id="message-894486307064127529" title="Message sent: 2021-10-04 07:29">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">And I&#39;m very very much like the whole workflow setup for the tickets and everything that you can do</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894486354782728202" id="message-894486354782728202" title="Message sent: 2021-10-04 07:29">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It&#39;s something I&#39;ve not had luck doing in Asana or Trello or such</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dan_hill2802#9147" data-user-id="543549471250841610" style="color: rgb(254,95,85)">dan_hill2802</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:34</span>
+
+            <div class="chatlog__message " data-message-id="894487541401653248" id="message-894487541401653248" title="Message sent: 2021-10-04 07:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">The other problem I often see with scrum is people working towards sprint objectives, rather than project objectives. For example, trying to get tickets marked as closed on the last day of the sprint, doing things like breaking bits off in to follow on tickets, cutting corners, or rushed reviews</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:36</span>
+
+            <div class="chatlog__message " data-message-id="894488130370015233" id="message-894488130370015233" title="Message sent: 2021-10-04 07:36">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Not a fan of complex and restrictive workflows. Adds too much overhead to the system. I would rather just know what needs doing next, what is currently being done and what has been finished. Dont often need much more then that. And being able to strict how tickets transform from one state to another never really adds much value - I often just see devs skipping through steps becuase they forgot to update the ticket and have to drag it through multiple different steps to get it where they want...
+It might work if you have things that need to flow between teams. But then IMO you should not have that much work that needs to flow between that many different teams. Teams should be self sufficent and able to service a ticket from creation to completion.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="dan_hill2802#9147" style="color: rgb(254,95,85)">dan_hill2802</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;894487541401653248&#39;)">
+The other problem I often see with scrum is people working towards sprint objectives, rather than project objectives. For example, trying to get tickets marked as closed on the last day of the sprint, doing things like breaking bits off in to follow on tickets, cutting corners, or rushed reviews                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 07:37</span>
+
+            <div class="chatlog__message " data-message-id="894488507396026388" id="message-894488507396026388" title="Message sent: 2021-10-04 07:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Sounds like they are following waterfall inside two week intervals</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 12:56</span>
+
+            <div class="chatlog__message " data-message-id="894568662437077093" id="message-894568662437077093" title="Message sent: 2021-10-04 12:56">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I am just trying to finish reading this book</span>
+
+                        </div>
+                    </div>
+
+                    <div class="chatlog__attachment " onclick="">
+
+                            <a href="https://cdn.discordapp.com/attachments/894451192275558430/894568658716733450/51zv3dxXlQL.png">
+                                <img class="chatlog__attachment-media" src="https://cdn.discordapp.com/attachments/894451192275558430/894568658716733450/51zv3dxXlQL.png" alt="Image attachment" title="Image: 51zv3dxXlQL.png (399.63 KB)" loading="lazy">
+                            </a>
+                    </div>
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894568717697024020" id="message-894568717697024020" title="Message sent: 2021-10-04 12:56">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">it mentions everything about project planning/analysis/designing</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894568751637348423" id="message-894568751637348423" title="Message sent: 2021-10-04 12:56">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">but a bit hard to go through the book.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894568837243101214" id="message-894568837243101214" title="Message sent: 2021-10-04 12:57">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">too much of things per page, or I am just not enough enthusiastic?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894570455757897778" id="message-894570455757897778" title="Message sent: 2021-10-04 13:03">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">as for the way to go...  I guess I know too little about the ways for now.
+I am having some sort of mix/or resemblance of Iterative/Agile development
+but I can&#39;t be sure for sure, because studying how to do this properly is going to be done later</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894570710641565756" id="message-894570710641565756" title="Message sent: 2021-10-04 13:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">trully I am at the moment of learning how the hell to do planning/analysis/designing properly in advance</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894570746133770262" id="message-894570746133770262" title="Message sent: 2021-10-04 13:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">instead of just going blindly forward</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-04 13:05">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/273687438751301633/6988617a494c0cd3affb8926ae326ed3.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Marcus H#9589" data-user-id="273687438751301633" style="color: rgb(254,95,85)">Marcus H</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 13:08</span>
+
+            <div class="chatlog__message " data-message-id="894571771271987270" id="message-894571771271987270" title="Message sent: 2021-10-04 13:08">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">this one is shorter book maybe <span class="mention" title="Darkwind#7896">@Darkwind</span> xD <a href="https://www.amazon.com/Systemantics-Systems-Work-Especially-They/dp/0812906748">https://www.amazon.com/Systemantics-Systems-Work-Especially-They/dp/0812906748</a></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/273687438751301633/6988617a494c0cd3affb8926ae326ed3.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Marcus H#9589" style="color: rgb(254,95,85)">Marcus H</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;894571771271987270&#39;)">
+this one is shorter book maybe <span class="mention" title="Darkwind#7896">@Darkwind</span> xD <a href="https://www.amazon.com/Systemantics-Systems-Work-Especially-They/dp/0812906748">https://www.amazon.com/Systemantics-Systems-Work-Especially-They/dp/0812906748</a>                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 13:09</span>
+
+            <div class="chatlog__message " data-message-id="894571977405243452" id="message-894571977405243452" title="Message sent: 2021-10-04 13:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">it looks a bit outdated <img loading="lazy" class="emoji " alt="😉" title="wink" src="https://twemoji.maxcdn.com/2/svg/1f609.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894572001476374529" id="message-894572001476374529" title="Message sent: 2021-10-04 13:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">mine has 6th edition!</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894572014961053706" id="message-894572014961053706" title="Message sent: 2021-10-04 13:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">last update at 2016 year</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894572046288318554" id="message-894572046288318554" title="Message sent: 2021-10-04 13:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">if book got updates, it is surely needed</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/273687438751301633/6988617a494c0cd3affb8926ae326ed3.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Marcus H#9589" data-user-id="273687438751301633" style="color: rgb(254,95,85)">Marcus H</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 13:10</span>
+
+            <div class="chatlog__message " data-message-id="894572072410447882" id="message-894572072410447882" title="Message sent: 2021-10-04 13:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">dunno I read the original (~100 pages)</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894572101795721257" id="message-894572101795721257" title="Message sent: 2021-10-04 13:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">anything interesting in the modern versions?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894572304548384819" id="message-894572304548384819" title="Message sent: 2021-10-04 13:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I have a feeling project management is not really innovating as much, we still commit same mistakes over and over again</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 13:11</span>
+
+            <div class="chatlog__message " data-message-id="894572340036390932" id="message-894572340036390932" title="Message sent: 2021-10-04 13:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">well, it is quite detailed</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894572347879743488" id="message-894572347879743488" title="Message sent: 2021-10-04 13:11">
+
+                    <div class="chatlog__attachment " onclick="">
+
+                            <a href="https://cdn.discordapp.com/attachments/894451192275558430/894572345849679962/unknown.png">
+                                <img class="chatlog__attachment-media" src="https://cdn.discordapp.com/attachments/894451192275558430/894572345849679962/unknown.png" alt="Image attachment" title="Image: unknown.png (72.93 KB)" loading="lazy">
+                            </a>
+                    </div>
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894572354716463155" id="message-894572354716463155" title="Message sent: 2021-10-04 13:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">490 pages</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/273687438751301633/6988617a494c0cd3affb8926ae326ed3.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Marcus H#9589" data-user-id="273687438751301633" style="color: rgb(254,95,85)">Marcus H</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 13:11</span>
+
+            <div class="chatlog__message " data-message-id="894572454121451522" id="message-894572454121451522" title="Message sent: 2021-10-04 13:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">like I knew a guy who knew a guy who went into management and read 19 books about management</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894572547784454185" id="message-894572547784454185" title="Message sent: 2021-10-04 13:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">he commented, that his collogues (other managers) have read 18 less</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 13:12</span>
+
+            <div class="chatlog__message " data-message-id="894572606244667482" id="message-894572606244667482" title="Message sent: 2021-10-04 13:12">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">the book is breifly mentioning the basics for all the paths</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-04 13:12">(edited)</span>
+                        </div>
+                    </div>
+
+                    <div class="chatlog__attachment " onclick="">
+
+                            <a href="https://cdn.discordapp.com/attachments/894451192275558430/894572604197863434/unknown.png">
+                                <img class="chatlog__attachment-media" src="https://cdn.discordapp.com/attachments/894451192275558430/894572604197863434/unknown.png" alt="Image attachment" title="Image: unknown.png (85.42 KB)" loading="lazy">
+                            </a>
+                    </div>
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/273687438751301633/6988617a494c0cd3affb8926ae326ed3.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Marcus H#9589" data-user-id="273687438751301633" style="color: rgb(254,95,85)">Marcus H</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 13:12</span>
+
+            <div class="chatlog__message " data-message-id="894572680500625408" id="message-894572680500625408" title="Message sent: 2021-10-04 13:12">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">so pretty sure you are good if you read a few books we already know of xD</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 13:12</span>
+
+            <div class="chatlog__message " data-message-id="894572680915861534" id="message-894572680915861534" title="Message sent: 2021-10-04 13:12">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">for project managers
+for software architects
+and other titles at the picture</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-04 13:13">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dan_hill2802#9147" data-user-id="543549471250841610" style="color: rgb(254,95,85)">dan_hill2802</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 16:58</span>
+
+            <div class="chatlog__message " data-message-id="894629443274952794" id="message-894629443274952794" title="Message sent: 2021-10-04 16:58">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Jira is typically what I end up using in most places. I&#39;ve also used Trello and GitHub Issues &amp; Projects</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 17:30</span>
+
+            <div class="chatlog__message " data-message-id="894637621526011944" id="message-894637621526011944" title="Message sent: 2021-10-04 17:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">We use Jira for tickets. I wouldn&#39;t  call it project management software, but a tool for project management, if that make sense.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dan_hill2802#9147" data-user-id="543549471250841610" style="color: rgb(254,95,85)">dan_hill2802</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 17:33</span>
+
+            <div class="chatlog__message " data-message-id="894638441374056500" id="message-894638441374056500" title="Message sent: 2021-10-04 17:33">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><div class="quote">Jira | Issue &amp; Project Tracking Software | Atlassian
+</div>Is their page title</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 17:34</span>
+
+            <div class="chatlog__message " data-message-id="894638598371045426" id="message-894638598371045426" title="Message sent: 2021-10-04 17:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I think it <em>can</em> be a full management set, but like you need to fully utalize it then</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894638681082720306" id="message-894638681082720306" title="Message sent: 2021-10-04 17:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I&#39;ve seen plenty of groups/comapnies just use it for kanban without all the features and stuff, then I&#39;ve seen people use..everything</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 20:02</span>
+
+            <div class="chatlog__message " data-message-id="894675762295222272" id="message-894675762295222272" title="Message sent: 2021-10-04 20:02">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention" title="Snowie (D4rk)#0116">@Snowie (D4rk)</span> How would you suggest to use JIRA to get the most effective and efficient project process?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894676512152907886" id="message-894676512152907886" title="Message sent: 2021-10-04 20:05">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">We use it, and it&#39;s basically a mess, we had one project with everything for development. Then somebody decided we needed a project per microservice, and now we are stuck in the middle with way too many projects in one board. We are changing to multiple teams, and now we have more boards with lots of projects and filtered based on tags. That&#39;s our Jira story...</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 20:11</span>
+
+            <div class="chatlog__message " data-message-id="894678190201651280" id="message-894678190201651280" title="Message sent: 2021-10-04 20:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah I would never do a project per microservice. I generally do a project for logical piece of software, so like an entire stack. If you have microservices, then use the component fields or whatever and map them out that way</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="thistbh">
+                                <img class="emoji emoji--small" alt="thistbh" src="https://cdn.discordapp.com/emojis/874697821926850591.png" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 20:18</span>
+
+            <div class="chatlog__message " data-message-id="894679821391654975" id="message-894679821391654975" title="Message sent: 2021-10-04 20:18">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">But for our project flow we separated our department in several groups (or communities as management calls it) and it has full responsibility over a part of code, including keeping it tested, documented, updated and bug-free (giving support when needed). If some product owner wants a feature it calls for a mission, and we make a plan with all the teams that need to participate (always leaving a couple behind to keep up with the continuous work). When the mission is declared (Designs, architectural plans and timeline) the mission starts. Everybody on the mission has its full focus on the mission, but needs to let others from the community review the changes before merging etc. This makes sure that the community is always accepting the change.
+
+Few key points here are:
+* There is always somebody handling second line of support and fixing bugs (or just tiding)
+* People working on features don&#39;t get interrupted by some high bug or instability, then focus on the mission and the person from previous point has to handle the fan
+* We can split the teams on what is easy to do instead of splitting them per product or product group
+* Some more, but it&#39;s late here, and I&#39;ll answer questions if they arise</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/216651123698696204/851ff3e31924e7c2d03efefaf323e42e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="bees#3810" data-user-id="216651123698696204" style="color: rgb(240,183,179)">bees</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 20:25</span>
+
+            <div class="chatlog__message " data-message-id="894681540439724123" id="message-894681540439724123" title="Message sent: 2021-10-04 20:25">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">In a lot of cases, it is much easier to split backlogs than it is to split projects</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 20:28</span>
+
+            <div class="chatlog__message " data-message-id="894682342952681542" id="message-894682342952681542" title="Message sent: 2021-10-04 20:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">What are the most powerful features of Jira?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894682827340263464" id="message-894682827340263464" title="Message sent: 2021-10-04 20:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Like the roadmaps feature is not available to us because we have multiple projects for the board</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/216651123698696204/851ff3e31924e7c2d03efefaf323e42e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="bees#3810" data-user-id="216651123698696204" style="color: rgb(240,183,179)">bees</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 20:45</span>
+
+            <div class="chatlog__message " data-message-id="894686607553212559" id="message-894686607553212559" title="Message sent: 2021-10-04 20:45">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I think Portfolio is really great</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894686636225478666" id="message-894686636225478666" title="Message sent: 2021-10-04 20:45">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">but you have to opt into it iirc</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/216651123698696204/851ff3e31924e7c2d03efefaf323e42e.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="bees#3810" style="color: rgb(240,183,179)">bees</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;894686607553212559&#39;)">
+I think Portfolio is really great                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 20:53</span>
+
+            <div class="chatlog__message " data-message-id="894688601495973939" id="message-894688601495973939" title="Message sent: 2021-10-04 20:53">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Is that advanced roadmaps now?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/216651123698696204/851ff3e31924e7c2d03efefaf323e42e.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="bees#3810" data-user-id="216651123698696204" style="color: rgb(240,183,179)">bees</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 20:54</span>
+
+            <div class="chatlog__message " data-message-id="894688947811282966" id="message-894688947811282966" title="Message sent: 2021-10-04 20:54">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I guess so! It&#39;s had like forty names so far</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-10-04 20:59</span>
+
+            <div class="chatlog__message " data-message-id="894690260095758356" id="message-894690260095758356" title="Message sent: 2021-10-04 20:59">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">So it&#39;s now part of Jira Align (for enterprise alignment). Seems to be primarily focused on sprints, could it also be used without sprints but with projects varying from 2 to 6 weeks?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dan_hill2802#9147" data-user-id="543549471250841610" style="color: rgb(254,95,85)">dan_hill2802</span>
+
+
+        <span class="chatlog__timestamp">2021-10-05 07:17</span>
+
+            <div class="chatlog__message " data-message-id="894845737425334312" id="message-894845737425334312" title="Message sent: 2021-10-05 07:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Jira&#39;s most powerful feature is its ability to convince entire companies and organisations that they are agile</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="joy">
+                                <img class="emoji emoji--small" alt="&#128514;" src="https://twemoji.maxcdn.com/2/svg/1f602.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">4</span>
+                            </div>
+                            <div class="chatlog__reaction" title="laughing">
+                                <img class="emoji emoji--small" alt="&#128518;" src="https://twemoji.maxcdn.com/2/svg/1f606.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                            <div class="chatlog__reaction" title="thumbsup">
+                                <img class="emoji emoji--small" alt="&#128077;" src="https://twemoji.maxcdn.com/2/svg/1f44d.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/162190760978939905/22644a198a72c5849e2a070aa671dbbd.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Silva#1498" data-user-id="162190760978939905" style="">Silva</span>
+
+
+        <span class="chatlog__timestamp">2021-10-05 08:15</span>
+
+            <div class="chatlog__message " data-message-id="894860327240491048" id="message-894860327240491048" title="Message sent: 2021-10-05 08:15">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">so true</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2021-10-05 10:18</span>
+
+            <div class="chatlog__message " data-message-id="894891240582152222" id="message-894891240582152222" title="Message sent: 2021-10-05 10:18">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I am just using Gitlab issues for myself</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894891283414392852" id="message-894891283414392852" title="Message sent: 2021-10-05 10:18">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">installed Typora as a comfortable markdown editor</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894891318080335923" id="message-894891318080335923" title="Message sent: 2021-10-05 10:18">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">writing documentation in it (relative links for files in repostitory work ;b)</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-05 10:21">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894891365316579358" id="message-894891365316579358" title="Message sent: 2021-10-05 10:18">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">together with draw.io scehems which i build into png images</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-05 10:19">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894891477765881858" id="message-894891477765881858" title="Message sent: 2021-10-05 10:19">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">and inserting all of it into gitlab issues, which are written in markdown too</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-05 10:21">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894891545248014366" id="message-894891545248014366" title="Message sent: 2021-10-05 10:19">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">linking directly markdown documents and images from repository to the issues</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894891798302965780" id="message-894891798302965780" title="Message sent: 2021-10-05 10:20">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">plus when necessary, adding sphinx-autodoc generated documentation</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="894892087940632626" id="message-894892087940632626" title="Message sent: 2021-10-05 10:21">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">typically... gitlab issues are purely for myself in order to remember what&#39;s going on <img loading="lazy" class="emoji " alt="😉" title="wink" src="https://twemoji.maxcdn.com/2/svg/1f609.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/96349389018116096/eb9685a963f146fcef09d5e063985660.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="traxell#4825" data-user-id="96349389018116096" style="">traxell</span>
+
+
+        <span class="chatlog__timestamp">2021-10-06 18:56</span>
+
+            <div class="chatlog__message " data-message-id="895384156916305970" id="message-895384156916305970" title="Message sent: 2021-10-06 18:56">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">hi all, a cloud student here. im trying to find a software/solution that would allow me to manage a project using agile/scrum that is integrated with github. ive tried azure devops but it&#39;s not possible to create issues from azure devops. it does have a synchronization which allows me to link (albeit manually) an issue on GitHub onto the azure devops backlog, but would prefer to minimize the amount of site switching while my team has to work on backlog planning. any pointers?</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-06 18:57">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dan_hill2802#9147" data-user-id="543549471250841610" style="color: rgb(254,95,85)">dan_hill2802</span>
+
+
+        <span class="chatlog__timestamp">2021-10-06 21:39</span>
+
+            <div class="chatlog__message " data-message-id="895425065146011649" id="message-895425065146011649" title="Message sent: 2021-10-06 21:39">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">@traxell#4825 have you tried using GitHub Projects?
+<a href="https://docs.github.com/en/issues/organizing-your-work-with-project-boards/managing-project-boards/about-project-boards">https://docs.github.com/en/issues/organizing-your-work-with-project-boards/managing-project-boards/about-project-boards</a></span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://docs.github.com/en/issues/organizing-your-work-with-project-boards/managing-project-boards/about-project-boards">
+                                                        <div class="markdown preserve-whitespace">About project boards - GitHub Docs</div>
+                                                    </a>
+                                            </div>
+
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/GknnCjizMYMXTf7AxtPGiAkqk1cGv6dwIUxYVc4g3cA/https/github.githubassets.com/images/modules/open_graph/github-logo.png">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/GknnCjizMYMXTf7AxtPGiAkqk1cGv6dwIUxYVc4g3cA/https/github.githubassets.com/images/modules/open_graph/github-logo.png" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/96349389018116096/eb9685a963f146fcef09d5e063985660.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="traxell#4825" data-user-id="96349389018116096" style="">traxell</span>
+
+
+        <span class="chatlog__timestamp">2021-10-07 22:00</span>
+
+            <div class="chatlog__message " data-message-id="895792627860013117" id="message-895792627860013117" title="Message sent: 2021-10-07 22:00">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">yup i have. unfortunately its lacking a bit in terms of agile/scrum components. cant make sprints, no retros, etc.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="895792707136520254" id="message-895792707136520254" title="Message sent: 2021-10-07 22:00">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">this is actually what we&#39;re using right now, its not a great experience</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+</div>
+
+<div class="postamble">
+    <div class="postamble__entry">Exported 76 message(s)</div>
+</div>
+
+</body>
+
+</html>
