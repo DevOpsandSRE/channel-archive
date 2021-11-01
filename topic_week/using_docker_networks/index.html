@@ -1,0 +1,3025 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>DevOps, SRE, &amp; Infrastructure - using-docker-networks</title>
+    <meta charset="utf-8">
+    <link rel="icon" 
+      type="image/png" 
+      href="../../favicon.ico">
+    <meta name="viewport" content="width=device-width">
+
+    <style>
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-300.woff);
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-400.woff);
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-500.woff);
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-600.woff);
+            font-weight: 600;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-700.woff);
+            font-weight: 700;
+        }
+
+        body {
+            background-color: #36393e;
+            color: #dcddde;
+            font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+        }
+
+        a {
+            color: #00aff4;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        img {
+            object-fit: contain;
+        }
+
+        .markdown {
+            max-width: 100%;
+            line-height: 1.3;
+            overflow-wrap: break-word;
+        }
+
+        .preserve-whitespace {
+            white-space: pre-wrap;
+        }
+
+        .spoiler-text {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .spoiler-text--hidden {
+            cursor: pointer;
+            background-color: #202225;
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .spoiler-text--hidden:hover {
+            background-color: rgba(32, 34, 37, 0.8);
+        }
+
+        .spoiler-text--hidden::selection {
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .quote {
+            display: flex;
+            margin: 0.05em 0;
+        }
+
+        .quote::before {
+            content: "";
+            margin-right: 0.5em;
+            border: 2px solid #4f545c;
+            border-radius: 3px;
+        }
+
+        .pre {
+            background-color: #2f3136;
+            font-family: "Consolas", "Courier New", Courier, monospace;
+        }
+
+        .pre--multiline {
+            margin-top: 0.25em;
+            padding: 0.5em;
+            border: 2px solid #282b30;
+            border-radius: 5px;
+            color: #b9bbbe;
+        }
+
+        .pre--multiline.hljs {
+            background-color: #2f3136;
+            color: #b9bbbe;
+        }
+
+        .pre--inline {
+            padding: 2px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        .mention {
+            border-radius: 3px;
+            padding: 0 2px;
+            color: #7289da;
+            background-color: rgba(114, 137, 218, .1);
+            font-weight: 500;
+        }
+
+        .timestamp {
+            border-radius: 3px;
+            padding: 0 2px;
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .emoji {
+            width: 1.325em;
+            height: 1.325em;
+            margin: 0 0.06em;
+            vertical-align: -0.4em;
+        }
+
+        .emoji--small {
+            width: 1em;
+            height: 1em;
+        }
+
+        .emoji--large {
+            width: 2.8em;
+            height: 2.8em;
+        }
+
+        .preamble {
+            display: grid;
+            margin: 0 0.3em 0.6em 0.3em;
+            max-width: 100%;
+            grid-template-columns: auto 1fr;
+        }
+
+        .preamble__guild-icon-container {
+            grid-column: 1;
+        }
+
+        .preamble__guild-icon {
+            max-width: 88px;
+            max-height: 88px;
+        }
+
+        .preamble__entries-container {
+            grid-column: 2;
+            margin-left: 0.6em;
+        }
+
+        .preamble__entry {
+            font-size: 1.4em;
+            color: #ffffff;
+        }
+
+        .preamble__entry--small {
+            font-size: 1em;
+        }
+
+        .chatlog {
+            max-width: 100%;
+        }
+
+        .chatlog__message-group {
+            display: grid;
+            margin: 0 0.6em;
+            padding: 0.9em 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            grid-template-columns: auto 1fr;
+        }
+
+        .chatlog__reference-symbol {
+            grid-column: 1;
+            margin: 8px 4px 4px 18px;
+            border-left: 2px solid #4f545c;
+            border-top: 2px solid #4f545c;
+            border-radius: 8px 0 0 0;
+        }
+
+        .chatlog__reference {
+            display: flex;
+            grid-column: 2;
+            margin-bottom: 0.25em;
+            font-size: 0.875em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            align-items: center;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-avatar {
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            margin-right: 0.25em;
+        }
+
+        .chatlog__reference-name {
+            margin-right: 0.3em;
+            font-weight: 600;
+        }
+
+        .chatlog__reference-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__reference-content a:hover {
+            text-decoration: none;
+        }
+
+        .chatlog__reference-link {
+            cursor: pointer;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-link * {
+            display: inline;
+            pointer-events: none;
+        }
+
+        .chatlog__reference-link:hover {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-link:hover *:not(.spoiler-text) {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-edited-timestamp {
+            margin-left: 0.25em;
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__author-avatar-container {
+            grid-column: 1;
+            width: 40px;
+            height: 40px;
+            margin-right: 16px;
+        }
+
+        .chatlog__author-avatar {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+
+        .chatlog__messages {
+            grid-column: 2;
+            min-width: 50%;
+        }
+
+        .chatlog__author-name {
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .chatlog__timestamp {
+            margin-left: 0.3em;
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__message {
+            padding: 0.1em 0.3em;
+            margin: 0 -0.3em;
+            background-color: transparent;
+            transition: background-color 1s ease;
+        }
+
+        .chatlog__message--highlighted {
+            background-color: rgba(114, 137, 218, 0.2);
+        }
+
+        .chatlog__message--pinned {
+            background-color: rgba(249, 168, 37, 0.05);
+        }
+
+        .chatlog__content {
+            font-size: 0.95em;
+            word-wrap: break-word;
+        }
+
+        .chatlog__edited-timestamp {
+            margin-left: 0.15em;
+            font-size: 0.8em;
+        }
+
+        .chatlog__attachment {
+            display: inline-block;
+            position: relative;
+            margin-top: 0.3em;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden {
+            cursor: pointer;
+            box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .chatlog__attachment--hidden * {
+            pointer-events: none;
+        }
+
+        .chatlog__attachment-spoiler-caption {
+            display: none;
+            z-index: 999;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 0.4em 0.8em;
+            background-color: rgba(0, 0, 0, 0.9);
+            border-radius: 20px;
+            color: #dcddde;
+            font-size: 0.9em;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-spoiler-caption {
+            display: block;
+        }
+
+        .chatlog__attachment--hidden:hover .chatlog__attachment-spoiler-caption {
+            color: #fff;
+        }
+
+        .chatlog__attachment-media {
+            vertical-align: top;
+            max-width: 45vw;
+            max-height: 500px;
+            border-radius: 3px;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-media {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic {
+            width: 100%;
+            max-width: 520px;
+            height: 40px;
+            padding: 10px;
+            background-color: #2f3136;
+            border: 1px solid #292b2f;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-generic {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic-icon {
+            float: left;
+            width: 30px;
+            height: 100%;
+            margin-right: 10px;
+        }
+
+        .chatlog__attachment-generic-size {
+            color: #72767d;
+            font-size: 12px;
+        }
+
+        .chatlog__attachment-generic-name {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__edited-timestamp {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__embed {
+            display: flex;
+            margin-top: 0.3em;
+            max-width: 520px;
+        }
+
+        .chatlog__embed-color-pill {
+            flex-shrink: 0;
+            width: 0.25em;
+            border-top-left-radius: 3px;
+            border-bottom-left-radius: 3px;
+        }
+
+        .chatlog__embed-color-pill--default {
+            background-color: #202225;
+        }
+
+        .chatlog__embed-content-container {
+            display: flex;
+            flex-direction: column;
+            padding: 0.5em 0.6em;
+            background-color: rgba(46, 48, 54, 0.3);
+            border: 1px solid rgba(46, 48, 54, 0.6);
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        .chatlog__embed-content {
+            display: flex;
+            width: 100%;
+        }
+
+        .chatlog__embed-text {
+            flex: 1;
+        }
+
+        .chatlog__embed-author {
+            display: flex;
+            margin-bottom: 0.3em;
+            align-items: center;
+        }
+
+        .chatlog__embed-author-icon {
+            margin-right: 0.5em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .chatlog__embed-author-name {
+            font-size: 0.875em;
+            font-weight: 600;
+            color: #ffffff
+        }
+
+        .chatlog__embed-author-name-link {
+            color: #ffffff;
+        }
+
+        .chatlog__embed-title {
+            margin-bottom: 0.2em;
+            font-size: 0.875em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-description {
+            font-weight: 500;
+            font-size: 0.85em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0 0.5em;
+        }
+
+        .chatlog__embed-field {
+            flex: 0;
+            min-width: 100%;
+            max-width: 506px;
+            padding-top: 0.6em;
+            font-size: 0.875em;
+        }
+
+        .chatlog__embed-field--inline {
+            flex: 1;
+            flex-basis: auto;
+            min-width: 150px;
+        }
+
+        .chatlog__embed-field-name {
+            margin-bottom: 0.2em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-field-value {
+            font-weight: 500;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-thumbnail {
+            flex: 0;
+            margin-left: 1.2em;
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-image-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-image {
+            max-width: 500px;
+            max-height: 400px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-footer {
+            margin-top: 0.6em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-footer-icon {
+            margin-right: 0.2em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+
+        .chatlog__embed-footer-text {
+            vertical-align: middle;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        .chatlog__embed-plainimage {
+            vertical-align: top;
+            max-width: 45vw;
+            max-height: 500px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-spotify {
+            border: 0;
+        }
+
+        .chatlog__embed-youtube-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-youtube {
+            border: 0;
+            border-radius: 3px;
+        }
+
+        .chatlog__reactions {
+            display: flex;
+        }
+
+        .chatlog__reaction {
+            display: flex;
+            align-items: center;
+            margin: 0.35em 0.1em 0.1em 0.1em;
+            padding: 0.2em 0.35em;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .chatlog__reaction-count {
+            min-width: 9px;
+            margin-left: 0.35em;
+            font-size: 0.875em;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .chatlog__bot-tag {
+            position: relative;
+            top: -.1em;
+            margin-left: 0.3em;
+            padding: 0.05em 0.3em;
+            border-radius: 3px;
+            line-height: 1.3;
+            background-color: #5865F2;
+            color: #ffffff;
+            font-size: 0.625em;
+            font-weight: 500;
+        }
+
+        .postamble {
+            margin: 1.4em 0.3em 0.6em 0.3em;
+            padding: 1em;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .postamble__entry {
+            color: #ffffff;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/solarized-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.pre--multiline').forEach(block => hljs.highlightBlock(block));
+        });
+    </script>
+
+    <script>
+        function scrollToMessage(event, id) {
+            var element = document.getElementById('message-' + id);
+
+            if (element) {
+                event.preventDefault();
+
+                element.classList.add('chatlog__message--highlighted');
+
+                window.scrollTo({
+                    top: element.getBoundingClientRect().top - document.body.getBoundingClientRect().top - (window.innerHeight / 2),
+                    behavior: 'smooth'
+                });
+
+                window.setTimeout(function() {
+                    element.classList.remove('chatlog__message--highlighted');
+                }, 2000);
+            }
+        }
+
+        function showSpoiler(event, element) {
+            if (element && element.classList.contains('spoiler-text--hidden')) {
+                event.preventDefault();
+                element.classList.remove('spoiler-text--hidden');
+            }
+            if (element && element.classList.contains('chatlog__attachment--hidden')) {
+                event.preventDefault();
+                element.classList.remove('chatlog__attachment--hidden');
+            }
+        }
+    </script>
+
+    <svg style="display: none">
+        <symbol id="icon-attachment" viewBox="0 0 720 960">
+            <path fill="#f4f5fb" d="M50,935a25,25,0,0,1-25-25V50A25,25,0,0,1,50,25H519.6L695,201.32V910a25,25,0,0,1-25,25Z" />
+            <path fill="#7789c4" d="M509.21,50,670,211.63V910H50V50H509.21M530,0H50A50,50,0,0,0,0,50V910a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50h0V191Z" />
+            <path fill="#f4f5fb" d="M530,215a25,25,0,0,1-25-25V50a25,25,0,0,1,16.23-23.41L693.41,198.77A25,25,0,0,1,670,215Z" />
+            <path fill="#7789c4" d="M530,70.71,649.29,190H530V70.71M530,0a50,50,0,0,0-50,50V190a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50Z" />
+        </symbol>
+    </svg>
+</head>
+<body>
+
+<div class="preamble">
+    <div class="preamble__guild-icon-container">
+        <img class="preamble__guild-icon" src="https://cdn.discordapp.com/icons/419745677585940482/a_36f1bfe78afb2a86f04ecdaeeeedeccd.png" alt="Guild icon" loading="lazy">
+    </div>
+    <div class="preamble__entries-container">
+        <div class="preamble__entry">DevOps, SRE, &amp; Infrastructure</div>
+        <div class="preamble__entry">#using-docker-networks</div>
+
+            <div class="preamble__entry preamble__entry--small">Let&#39;s Discuss Docker Networks!</div>
+
+    </div>
+</div>
+
+<div class="chatlog">
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 14:40</span>
+
+            <div class="chatlog__message " data-message-id="902204964548517958" id="message-902204964548517958" title="Message sent: 2021-10-25 14:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">This week we are going to discuss Docker networks. Many people use them differently. Tutorials, help from this community as well as others, reading material, etc may contradict one another. But the question is, what is the best way to use them?
+
+Types of networks people uses form day today:
+<strong> - Links</strong>
+<strong> - Host networks</strong>
+ <strong>- Ports</strong>
+ <strong>- External</strong>
+ <strong>- Etc</strong>
+
+There are also many network drivers you can use as well (host, bridge, overlay, macvlan, etc). 
+
+Let&#39;s discuss how you would do this and examples on how to actually do it.
+
+ - <a href="https://docs.docker.com/network/">https://docs.docker.com/network/</a>
+ - <a href="https://earthly.dev/blog/docker-networking/">https://earthly.dev/blog/docker-networking/</a></span>
+
+                        </div>
+                    </div>
+
+                    <div class="chatlog__attachment " onclick="">
+
+                            <a href="https://cdn.discordapp.com/attachments/902202557819142144/902204964590485524/Banner_9.jpg">
+                                <img class="chatlog__attachment-media" src="https://cdn.discordapp.com/attachments/902202557819142144/902204964590485524/Banner_9.jpg" alt="Image attachment" title="Image: Banner_9.jpg (13.95 KB)" loading="lazy">
+                            </a>
+                    </div>
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Zig#3569" style="color: rgb(176,226,152)">Zig</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902204964548517958&#39;)">
+This week we are going to discuss Docker networks. Many people use them differently. Tutorials, help from this community as well as others, reading material, etc may contradict one another. But the question is, what is the best way to use them?
+
+Types of networks people uses form day today:
+<strong> - Links</strong>
+<strong> - Host networks</strong>
+ <strong>- Ports</strong>
+ <strong>- External</strong>
+ <strong>- Etc</strong>
+
+There are also many network drivers you can use as well (host, bridge, overlay, macvlan, etc). 
+
+Let&#39;s discuss how you would do this and examples on how to actually do it.
+
+ - <a href="https://docs.docker.com/network/">https://docs.docker.com/network/</a>
+ - <a href="https://earthly.dev/blog/docker-networking/">https://earthly.dev/blog/docker-networking/</a>                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 14:48</span>
+
+            <div class="chatlog__message " data-message-id="902206874064134224" id="message-902206874064134224" title="Message sent: 2021-10-25 14:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Links are not valid forms of docker networks those are legacy from 1.9 before we had networks also I&#39;m pretty sure you put links just to piss me off.</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="laughing">
+                                <img class="emoji emoji--small" alt="&#128518;" src="https://twemoji.maxcdn.com/2/svg/1f606.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+            <div class="chatlog__message " data-message-id="902206889520156692" id="message-902206889520156692" title="Message sent: 2021-10-25 14:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><img loading="lazy" class="emoji emoji--large" alt="spray" title="spray" src="https://cdn.discordapp.com/emojis/718705604067196951.png"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Astral#0524" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902206874064134224&#39;)">
+Links are not valid forms of docker networks those are legacy from 1.9 before we had networks also I&#39;m pretty sure you put links just to piss me off.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 14:48</span>
+
+            <div class="chatlog__message " data-message-id="902207100594298990" id="message-902207100594298990" title="Message sent: 2021-10-25 14:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Exactly. Thats why I listed it. People still use them. Explain why it&#39;s a bad idea</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 14:49</span>
+
+            <div class="chatlog__message " data-message-id="902207165488570418" id="message-902207165488570418" title="Message sent: 2021-10-25 14:49">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">After I yeet you infront of some bus maybe</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="laughing">
+                                <img class="emoji emoji--small" alt="&#128518;" src="https://twemoji.maxcdn.com/2/svg/1f606.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 14:49</span>
+
+            <div class="chatlog__message " data-message-id="902207231662125106" id="message-902207231662125106" title="Message sent: 2021-10-25 14:49">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">lol</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 14:50</span>
+
+            <div class="chatlog__message " data-message-id="902207479331586098" id="message-902207479331586098" title="Message sent: 2021-10-25 14:50">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I have to deal with people parading around and saying links is proper or IPAM or other shit on a daily basis it&#39;s the most bullshit stress because they read online to use links or IPAM for all containers.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Astral#0524" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902207479331586098&#39;)">
+I have to deal with people parading around and saying links is proper or IPAM or other shit on a daily basis it&#39;s the most bullshit stress because they read online to use links or IPAM for all containers.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 14:51</span>
+
+            <div class="chatlog__message " data-message-id="902207815626653728" id="message-902207815626653728" title="Message sent: 2021-10-25 14:51">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I heard that. haha</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Zig#3569" style="color: rgb(176,226,152)">Zig</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902207815626653728&#39;)">
+I heard that. haha                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 14:51</span>
+
+            <div class="chatlog__message " data-message-id="902207857762644048" id="message-902207857762644048" title="Message sent: 2021-10-25 14:51">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><img loading="lazy" class="emoji emoji--large" alt="FoxetteEvilSmug" title="FoxetteEvilSmug" src="https://cdn.discordapp.com/emojis/808373711178432552.png"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/161154369763409921/51812da10240c9ebf55c47ba4c3d8daa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="kahnwong#7593" data-user-id="161154369763409921" style="">kahnwong</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 14:54</span>
+
+            <div class="chatlog__message " data-message-id="902208436454965319" id="message-902208436454965319" title="Message sent: 2021-10-25 14:54">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">AWS ecs task definition uses link IIRC
+
+I&#39;m usually add depends_on and slap a custom network name per each compose file. Prob need some sanitization, please guide the way</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 14:54</span>
+
+            <div class="chatlog__message " data-message-id="902208489038946367" id="message-902208489038946367" title="Message sent: 2021-10-25 14:54">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">You can use them without links</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902208588947267684" id="message-902208588947267684" title="Message sent: 2021-10-25 14:54">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">People are just forking lazy and it means less setup if people use links as it makes all containers accessible via localhost / loopback</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/161154369763409921/51812da10240c9ebf55c47ba4c3d8daa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="kahnwong#7593" data-user-id="161154369763409921" style="">kahnwong</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 14:55</span>
+
+            <div class="chatlog__message " data-message-id="902208871215558656" id="message-902208871215558656" title="Message sent: 2021-10-25 14:55">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I think I usually use docker bridge network mode</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/85784020922667008/0b038b5cf7127383ca71765cfb93d513.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="modulos#7495" data-user-id="85784020922667008" style="">modulos</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 15:01</span>
+
+            <div class="chatlog__message " data-message-id="902210226948812831" id="message-902210226948812831" title="Message sent: 2021-10-25 15:01">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">This is an interesting topic for me. I do quite a bit of network engineering, but never had to delve into docker/container networks.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 15:04</span>
+
+            <div class="chatlog__message " data-message-id="902210996846858251" id="message-902210996846858251" title="Message sent: 2021-10-25 15:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">funny to see people using 
+
+<div class="pre pre--multiline language-yml"> service:
+  blah:
+   networks:
+    - blah
+
+networks:
+ blah:
+  name: blah
+  driver: bridge</div>
+Which is not needed in the end as blah will auto default to bridge unless otherwise stated elsewhere.. and it&#39;s already using the name blah
+
+<div class="pre pre--multiline language-yml"> service:
+  blah:
+   networks:
+    - blah
+
+networks:
+ blah:</div>
+Is all you need really aha</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/161154369763409921/51812da10240c9ebf55c47ba4c3d8daa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="kahnwong#7593" data-user-id="161154369763409921" style="">kahnwong</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 15:07</span>
+
+            <div class="chatlog__message " data-message-id="902211685761302559" id="message-902211685761302559" title="Message sent: 2021-10-25 15:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Neat!</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-25 15:07">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:29</span>
+
+            <div class="chatlog__message " data-message-id="902232414066212924" id="message-902232414066212924" title="Message sent: 2021-10-25 16:29">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">99% of the time you really dont need to worry about docker networks. By default every container ends up in the default network and is able to talk to everything else in the same network. Docker-compose creates its own network for each file you deploy and everything inside a docker compose file can talk to everything else deployed in the same compose file.
+
+Changing the network to the host type is basically opting out of docker networks completely and just using the hosts network namespace (so localhost is the host box and you can see all traffic on the host) Generally you should not need this unless you need to talk to something on the host (and even then - why is that not in a container?).
+
+In production you should probably not be using docker networks beyond the default one. If your requirements grow to needing more then the one you probably already want to be using some orchestrate like Kube which has is own networking stuff and does not use any docker networks at all.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:30</span>
+
+            <div class="chatlog__message " data-message-id="902232728974524476" id="message-902232728974524476" title="Message sent: 2021-10-25 16:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Love how nous just ingores links</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:31</span>
+
+            <div class="chatlog__message " data-message-id="902232802848829480" id="message-902232802848829480" title="Message sent: 2021-10-25 16:31">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">cause links is deprecated. Just dont use them</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:31</span>
+
+            <div class="chatlog__message " data-message-id="902232857869684737" id="message-902232857869684737" title="Message sent: 2021-10-25 16:31">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Normally you&#39;d use host networking if you need it to see multicast and such and some smart devices on your network</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902232941428621312" id="message-902232941428621312" title="Message sent: 2021-10-25 16:31">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It&#39;s easier to discover them via host networking over bridge</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902233494233681931" id="message-902233494233681931" title="Message sent: 2021-10-25 16:33">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I use networks to isolate traffic, Like for example your reverse proxy doesn&#39;t need to be able to see database at all either.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Astral#0524" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902233494233681931&#39;)">
+I use networks to isolate traffic, Like for example your reverse proxy doesn&#39;t need to be able to see database at all either.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:35</span>
+
+            <div class="chatlog__message " data-message-id="902233847800926288" id="message-902233847800926288" title="Message sent: 2021-10-25 16:35">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Locally that should not matter. In production - why is your database on the same server as your application :/</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:35</span>
+
+            <div class="chatlog__message " data-message-id="902234008153391155" id="message-902234008153391155" title="Message sent: 2021-10-25 16:35">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">You don&#39;t always have the option to have multiple hosts nor is some small site need a full dedicated server for database</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902234057067339906" id="message-902234057067339906" title="Message sent: 2021-10-25 16:36">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Nous forgetting not everyone has money</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902234152089317486" id="message-902234152089317486" title="Message sent: 2021-10-25 16:36">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">If you want you can give me money and I&#39;ll make it all pretty.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902234281793957908" id="message-902234281793957908" title="Message sent: 2021-10-25 16:36">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">But even in the end if you have database local it shouldn&#39;t be accessible by any container that&#39;s running.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Nous#2788" style="color: rgb(240,183,179)">Nous</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902233847800926288&#39;)">
+Locally that should not matter. In production - why is your database on the same server as your application :/                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:37</span>
+
+            <div class="chatlog__message " data-message-id="902234348378542182" id="message-902234348378542182" title="Message sent: 2021-10-25 16:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><img loading="lazy" class="emoji emoji--large" alt="spray" title="spray" src="https://cdn.discordapp.com/emojis/718705604067196951.png"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Astral#0524" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902234057067339906&#39;)">
+Nous forgetting not everyone has money                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:40</span>
+
+            <div class="chatlog__message " data-message-id="902235215202746399" id="message-902235215202746399" title="Message sent: 2021-10-25 16:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Well I think he meant production as in a company production. Not home lab production</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-25 16:40">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:40</span>
+
+            <div class="chatlog__message " data-message-id="902235299546038453" id="message-902235299546038453" title="Message sent: 2021-10-25 16:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Company production you should also be limiting access to database</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902235359767851069" id="message-902235359767851069" title="Message sent: 2021-10-25 16:41">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Only stuff that should have access should be able to even reach it</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:41</span>
+
+            <div class="chatlog__message " data-message-id="902235401698299905" id="message-902235401698299905" title="Message sent: 2021-10-25 16:41">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Right. I mean, in a company setting, usually the DB is not on the same node as the app. SPOF</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="thistbh">
+                                <img class="emoji emoji--small" alt="thistbh" src="https://cdn.discordapp.com/emojis/874697821926850591.png" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:41</span>
+
+            <div class="chatlog__message " data-message-id="902235494920888390" id="message-902235494920888390" title="Message sent: 2021-10-25 16:41">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">If it is it should be still restricted on who or what should access it</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902235523568009247" id="message-902235523568009247" title="Message sent: 2021-10-25 16:41">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Also that &quot;This TBH&quot; looks horrid</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902235589225639936" id="message-902235589225639936" title="Message sent: 2021-10-25 16:42">
+
+                    <div class="chatlog__attachment " onclick="">
+
+                            <a href="https://cdn.discordapp.com/attachments/902202557819142144/902235587405287494/unknown.png">
+                                <img class="chatlog__attachment-media" src="https://cdn.discordapp.com/attachments/902202557819142144/902235587405287494/unknown.png" alt="Image attachment" title="Image: unknown.png (2.54 KB)" loading="lazy">
+                            </a>
+                    </div>
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:42</span>
+
+            <div class="chatlog__message " data-message-id="902235691986059274" id="message-902235691986059274" title="Message sent: 2021-10-25 16:42">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">For apps, I spin up multiple hosts with an app container. Point them at RDS. Done</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902235775855382578" id="message-902235775855382578" title="Message sent: 2021-10-25 16:42">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">For production, I dont agree databases should be in containers either. Another topic though</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:43</span>
+
+            <div class="chatlog__message " data-message-id="902235960039866448" id="message-902235960039866448" title="Message sent: 2021-10-25 16:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">If it was even a k8s environment internal networking you would restrict access if you say no then you&#39;re just like todd howard who put a debug room (has everything with infinite spawning of items in a MMORPG with an economy)</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Astral#0524" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902235494920888390&#39;)">
+If it is it should be still restricted on who or what should access it                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:43</span>
+
+            <div class="chatlog__message " data-message-id="902235983171420210" id="message-902235983171420210" title="Message sent: 2021-10-25 16:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">You can still have access controls without everything being on the same host. And that is not something docker network can help you with. Ideally you should also be using a managed database for which ever cloud provider you have.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:44</span>
+
+            <div class="chatlog__message " data-message-id="902236063731425361" id="message-902236063731425361" title="Message sent: 2021-10-25 16:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Docker networking you can indeed isolate traffic from reaching another container</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:44</span>
+
+            <div class="chatlog__message " data-message-id="902236166588346448" id="message-902236166588346448" title="Message sent: 2021-10-25 16:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Not when the database is on a different host in a managed instance that is not likely running docker</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:44</span>
+
+            <div class="chatlog__message " data-message-id="902236294795644979" id="message-902236294795644979" title="Message sent: 2021-10-25 16:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Again said when in containers</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902236368112070789" id="message-902236368112070789" title="Message sent: 2021-10-25 16:45">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Database in container runs just as fine as one not in a container</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:45</span>
+
+            <div class="chatlog__message " data-message-id="902236486831849522" id="message-902236486831849522" title="Message sent: 2021-10-25 16:45">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I still dont agree DBs should be in containers though. Just my opinion</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902236555194806335" id="message-902236555194806335" title="Message sent: 2021-10-25 16:45">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Home labs, home projects, sure</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902236625935945869" id="message-902236625935945869" title="Message sent: 2021-10-25 16:46">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">not when you are expecting thousands of requests and need replication</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dan_hill2802#9147" data-user-id="543549471250841610" style="color: rgb(254,95,85)">dan_hill2802</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:46</span>
+
+            <div class="chatlog__message " data-message-id="902236627185831966" id="message-902236627185831966" title="Message sent: 2021-10-25 16:46">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Fine for integration tests and local stacks</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:46</span>
+
+            <div class="chatlog__message " data-message-id="902236639244464138" id="message-902236639244464138" title="Message sent: 2021-10-25 16:46">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">yes</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:46</span>
+
+            <div class="chatlog__message " data-message-id="902236706122649630" id="message-902236706122649630" title="Message sent: 2021-10-25 16:46">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Going back to original point you can totally isolate traffic away from certain containers using networks in docker</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dan_hill2802#9147" data-user-id="543549471250841610" style="color: rgb(254,95,85)">dan_hill2802</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:47</span>
+
+            <div class="chatlog__message " data-message-id="902236924260024340" id="message-902236924260024340" title="Message sent: 2021-10-25 16:47">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Databases are old and most of their problems have been solved a thousand times. Save yourself a world of pain and use managed services for databases</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:47</span>
+
+            <div class="chatlog__message " data-message-id="902236938206064701" id="message-902236938206064701" title="Message sent: 2021-10-25 16:47">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">But the database <em>should</em> be on its own host in production environments. And then unless you want to configure multi-node docker network you would not be using docker networks at all. And if you really need docker networks on a multi host environment you <em>really</em> should be useing kube.</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="100">
+                                <img class="emoji emoji--small" alt="&#128175;" src="https://twemoji.maxcdn.com/2/svg/1f4af.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">2</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dan_hill2802#9147" data-user-id="543549471250841610" style="color: rgb(254,95,85)">dan_hill2802</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:48</span>
+
+            <div class="chatlog__message " data-message-id="902237153591963718" id="message-902237153591963718" title="Message sent: 2021-10-25 16:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Docker networks are useful for tests in pipelines, local stacks, and small POCs</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:48</span>
+
+            <div class="chatlog__message " data-message-id="902237227294281748" id="message-902237227294281748" title="Message sent: 2021-10-25 16:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Unless you dont have k8s yet. That in itself is a project to get going. Dont deploy k8s just to run a DB</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dan_hill2802#9147" data-user-id="543549471250841610" style="color: rgb(254,95,85)">dan_hill2802</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:49</span>
+
+            <div class="chatlog__message " data-message-id="902237330449002496" id="message-902237330449002496" title="Message sent: 2021-10-25 16:49">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">If you don&#39;t need k8, use Fargate instead</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:49</span>
+
+            <div class="chatlog__message " data-message-id="902237446245335070" id="message-902237446245335070" title="Message sent: 2021-10-25 16:49">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Any reason to not just use RDS / Aurora if using AWS at that point?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:49</span>
+
+            <div class="chatlog__message " data-message-id="902237502419656724" id="message-902237502419656724" title="Message sent: 2021-10-25 16:49">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><img loading="lazy" class="emoji emoji--large" alt="FoxetteSMH" title="FoxetteSMH" src="https://cdn.discordapp.com/emojis/843240427666276382.png"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dan_hill2802#9147" data-user-id="543549471250841610" style="color: rgb(254,95,85)">dan_hill2802</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:49</span>
+
+            <div class="chatlog__message " data-message-id="902237538255769631" id="message-902237538255769631" title="Message sent: 2021-10-25 16:49">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I meant Fargate for the app containers</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:50</span>
+
+            <div class="chatlog__message " data-message-id="902237591343091743" id="message-902237591343091743" title="Message sent: 2021-10-25 16:50">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">oh yes. I thought you meant DBs in the containers</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902237599572308039" id="message-902237599572308039" title="Message sent: 2021-10-25 16:50">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">apps, sure</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/161154369763409921/51812da10240c9ebf55c47ba4c3d8daa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="kahnwong#7593" data-user-id="161154369763409921" style="">kahnwong</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:51</span>
+
+            <div class="chatlog__message " data-message-id="902237913276874784" id="message-902237913276874784" title="Message sent: 2021-10-25 16:51">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I set up a data catalog with elastic search and neo4j as docker containers on ecs 
+
+But that&#39;s only because we don&#39;t really use those for other stuff. And it&#39;s one way only (populate data from another script into the service) so it&#39;s somewhat doable</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dan_hill2802#9147" data-user-id="543549471250841610" style="color: rgb(254,95,85)">dan_hill2802</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:51</span>
+
+            <div class="chatlog__message " data-message-id="902237952770449409" id="message-902237952770449409" title="Message sent: 2021-10-25 16:51">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Has this become:
+<span class="mention">#using-docker-networks</span> : don&#39;t, you don&#39;t need em?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/161154369763409921/51812da10240c9ebf55c47ba4c3d8daa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="kahnwong#7593" data-user-id="161154369763409921" style="">kahnwong</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:51</span>
+
+            <div class="chatlog__message " data-message-id="902237959208726568" id="message-902237959208726568" title="Message sent: 2021-10-25 16:51">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">As in, no data is being entered through the service</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902238089269891133" id="message-902238089269891133" title="Message sent: 2021-10-25 16:52">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Kinda a hack, I know</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/543549471250841610/76c3625172da6592f0a52946ceb147fa.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="dan_hill2802#9147" style="color: rgb(254,95,85)">dan_hill2802</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902237952770449409&#39;)">
+Has this become:
+<span class="mention">#using-docker-networks</span> : don&#39;t, you don&#39;t need em?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:52</span>
+
+            <div class="chatlog__message " data-message-id="902238191279546388" id="message-902238191279546388" title="Message sent: 2021-10-25 16:52">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I would say more: you dont need to really worry about them. You get one by default - use that. If you are using docker-compose then each stack gets its own network anyway so dont really have to worry about it.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 16:52</span>
+
+            <div class="chatlog__message " data-message-id="902238269331349615" id="message-902238269331349615" title="Message sent: 2021-10-25 16:52">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Okay Todd Howard</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 18:47</span>
+
+            <div class="chatlog__message " data-message-id="902267018819039232" id="message-902267018819039232" title="Message sent: 2021-10-25 18:47">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Is there a way to isolate 2 containers while serving them with one reverse proxy? Or is it only possible with multiple proxies?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 18:56</span>
+
+            <div class="chatlog__message " data-message-id="902269375904641044" id="message-902269375904641044" title="Message sent: 2021-10-25 18:56">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">What are you wanting to see vs what you&#39;re currently seeing?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 19:17</span>
+
+            <div class="chatlog__message " data-message-id="902274603513163806" id="message-902274603513163806" title="Message sent: 2021-10-25 19:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I have 2 containers I don&#39;t trust, want to publish them with a reverse proxy on a single host</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/139610932547551232/b1b574417307d12d3db9016a653df14b.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Scratch#4334" data-user-id="139610932547551232" style="color: rgb(254,95,85)">Scratch</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 19:18</span>
+
+            <div class="chatlog__message " data-message-id="902274949878796288" id="message-902274949878796288" title="Message sent: 2021-10-25 19:18">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">yeah that can just be configured by the reverse proxy</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 19:24</span>
+
+            <div class="chatlog__message " data-message-id="902276385354186793" id="message-902276385354186793" title="Message sent: 2021-10-25 19:24">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">The reverse proxy needs to be in the same network?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Eagle#6272" style="">Eagle</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902276385354186793&#39;)">
+The reverse proxy needs to be in the same network?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/139610932547551232/b1b574417307d12d3db9016a653df14b.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Scratch#4334" data-user-id="139610932547551232" style="color: rgb(254,95,85)">Scratch</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 19:27</span>
+
+            <div class="chatlog__message " data-message-id="902277137308999740" id="message-902277137308999740" title="Message sent: 2021-10-25 19:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">yes. I assume you want it so if the user requests /foo it goes to one container and if the user requests /bar it goes to another?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 19:28</span>
+
+            <div class="chatlog__message " data-message-id="902277373100195880" id="message-902277373100195880" title="Message sent: 2021-10-25 19:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">But how can I keep the 2 untrusted containers on their own networks?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Eagle#6272" style="">Eagle</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902277373100195880&#39;)">
+But how can I keep the 2 untrusted containers on their own networks?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 19:32</span>
+
+            <div class="chatlog__message " data-message-id="902278408850014290" id="message-902278408850014290" title="Message sent: 2021-10-25 19:32">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">What are the containers?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902278660806045716" id="message-902278660806045716" title="Message sent: 2021-10-25 19:33">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">How are you currently running them too would also help</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 19:34</span>
+
+            <div class="chatlog__message " data-message-id="902279034854060082" id="message-902279034854060082" title="Message sent: 2021-10-25 19:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">So currently I have a reverse proxy traefik. That runs on the proxy network. And 2+ customer containers that I don&#39;t want to directly communicate with each other. But now I have to add them to the proxy network for traefik to reach it</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 19:37</span>
+
+            <div class="chatlog__message " data-message-id="902279675898921090" id="message-902279675898921090" title="Message sent: 2021-10-25 19:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Add traefik to each network. A container can be part of multiple networks</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-25 19:43</span>
+
+            <div class="chatlog__message " data-message-id="902281265879851079" id="message-902281265879851079" title="Message sent: 2021-10-25 19:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Bit curious on the &quot;untrusted&quot; containers etc</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Nous#2788" style="color: rgb(240,183,179)">Nous</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902232414066212924&#39;)">
+99% of the time you really dont need to worry about docker networks. By default every container ends up in the default network and is able to talk to everything else in the same network. Docker-compose creates its own network for each file you deploy and everything inside a docker compose file can talk to everything else deployed in the same compose file.
+
+Changing the network to the host type is basically opting out of docker networks completely and just using the hosts network namespace (so localhost is the host box and you can see all traffic on the host) Generally you should not need this unless you need to talk to something on the host (and even then - why is that not in a container?).
+
+In production you should probably not be using docker networks beyond the default one. If your requirements grow to needing more then the one you probably already want to be using some orchestrate like Kube which has is own networking stuff and does not use any docker networks at all.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2021-10-26 06:07</span>
+
+            <div class="chatlog__message " data-message-id="902438165820866642" id="message-902438165820866642" title="Message sent: 2021-10-26 06:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">TLDR: we don&#39;t need docker networks <img loading="lazy" class="emoji " alt="😉" title="wink" src="https://twemoji.maxcdn.com/2/svg/1f609.svg"> nice</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-26 06:08">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902438835785449573" id="message-902438835785449573" title="Message sent: 2021-10-26 06:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">tbh, the only time so far when I needed to carry about docker networks...</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902438982527377449" id="message-902438982527377449" title="Message sent: 2021-10-26 06:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">...when I discovered that default ubuntu ufw firewall is not compatible with docker networks, so exposed ports will be still visible to public even if you forbid them in firewall.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902439090643939339" id="message-902439090643939339" title="Message sent: 2021-10-26 06:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">...I just started to use <span class="pre pre--inline">iptables</span> directly (I mean through ansible directly ;b). it was able to block docker things from public view nicely</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-26 06:11">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902439183715553290" id="message-902439183715553290" title="Message sent: 2021-10-26 06:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">and addressing containers in docker compose by container name is cool too.</span>
+
+                                <span class="chatlog__edited-timestamp" title="2021-10-26 06:12">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Astral#0524" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902281265879851079&#39;)">
+Bit curious on the &quot;untrusted&quot; containers etc                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/718920802451325008/b7e5676c3c8770d67564f1f7099557f5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Eagle#6272" data-user-id="718920802451325008" style="">Eagle</span>
+
+
+        <span class="chatlog__timestamp">2021-10-26 07:48</span>
+
+            <div class="chatlog__message " data-message-id="902463795924979723" id="message-902463795924979723" title="Message sent: 2021-10-26 07:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Some containers that I only what to be accessed via the proxy, not directly from another container on the host</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Darkwind#7896" style="">Darkwind</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;902438982527377449&#39;)">
+...when I discovered that default ubuntu ufw firewall is not compatible with docker networks, so exposed ports will be still visible to public even if you forbid them in firewall.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/107056552212447232/cb15ba3e913db9bd55df7167c8db65fc.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="TuxyQ#1337" data-user-id="107056552212447232" style="color: rgb(255,203,70)">Thor</span>
+
+
+        <span class="chatlog__timestamp">2021-10-26 10:25</span>
+
+            <div class="chatlog__message " data-message-id="902503322941018142" id="message-902503322941018142" title="Message sent: 2021-10-26 10:25">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">UFW is just a frontend, and docker networks, without any additional network plugin, uses the available *tables subsystem, which your firewall frontend also use, so it&#39;s important that the order they are started is correct</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="902503531976732752" id="message-902503531976732752" title="Message sent: 2021-10-26 10:26">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">if you strugle with docker thing being exposed, you should stop exposing them</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-26 11:46</span>
+
+            <div class="chatlog__message " data-message-id="902523703584251905" id="message-902523703584251905" title="Message sent: 2021-10-26 11:46">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">You don&#39;t even need to expose stuff to the host in the end either.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/107056552212447232/cb15ba3e913db9bd55df7167c8db65fc.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="TuxyQ#1337" data-user-id="107056552212447232" style="color: rgb(255,203,70)">Thor</span>
+
+
+        <span class="chatlog__timestamp">2021-10-26 11:49</span>
+
+            <div class="chatlog__message " data-message-id="902524245383471135" id="message-902524245383471135" title="Message sent: 2021-10-26 11:49">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">personally I have 1 container exposed, Tr&#230;fik, the rest is proxied by it</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="thistbh">
+                                <img class="emoji emoji--small" alt="thistbh" src="https://cdn.discordapp.com/emojis/714500629657026601.png" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sleeping)</span>
+
+
+        <span class="chatlog__timestamp">2021-10-26 12:02</span>
+
+            <div class="chatlog__message " data-message-id="902527652257202197" id="message-902527652257202197" title="Message sent: 2021-10-26 12:02">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yep Yep</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+</div>
+
+<div class="postamble">
+    <div class="postamble__entry">Exported 88 message(s)</div>
+</div>
+
+</body>
+
+</html>
