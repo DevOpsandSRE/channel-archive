@@ -1,0 +1,3543 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>DevOps, SRE, &amp; Infrastructure - kubernetes-getting-started</title>
+    <meta charset="utf-8">
+    <link rel="icon" 
+      type="image/png" 
+      href="../../favicon.ico">
+    <meta name="viewport" content="width=device-width">
+
+    <style>
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-300.woff);
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-400.woff);
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-500.woff);
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-600.woff);
+            font-weight: 600;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-700.woff);
+            font-weight: 700;
+        }
+
+        body {
+            background-color: #36393e;
+            color: #dcddde;
+            font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+        }
+
+        a {
+            color: #00aff4;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        img {
+            object-fit: contain;
+        }
+
+        .markdown {
+            max-width: 100%;
+            line-height: 1.3;
+            overflow-wrap: break-word;
+        }
+
+        .preserve-whitespace {
+            white-space: pre-wrap;
+        }
+
+        .spoiler-text {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .spoiler-text--hidden {
+            cursor: pointer;
+            background-color: #202225;
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .spoiler-text--hidden:hover {
+            background-color: rgba(32, 34, 37, 0.8);
+        }
+
+        .spoiler-text--hidden::selection {
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .quote {
+            display: flex;
+            margin: 0.05em 0;
+        }
+
+        .quote::before {
+            content: "";
+            margin-right: 0.5em;
+            border: 2px solid #4f545c;
+            border-radius: 3px;
+        }
+
+        .pre {
+            background-color: #2f3136;
+            font-family: "Consolas", "Courier New", Courier, monospace;
+        }
+
+        .pre--multiline {
+            margin-top: 0.25em;
+            padding: 0.5em;
+            border: 2px solid #282b30;
+            border-radius: 5px;
+            color: #b9bbbe;
+        }
+
+        .pre--multiline.hljs {
+            background-color: #2f3136;
+            color: #b9bbbe;
+        }
+
+        .pre--inline {
+            padding: 2px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        .mention {
+            border-radius: 3px;
+            padding: 0 2px;
+            color: #7289da;
+            background-color: rgba(114, 137, 218, .1);
+            font-weight: 500;
+        }
+
+        .timestamp {
+            border-radius: 3px;
+            padding: 0 2px;
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .emoji {
+            width: 1.325em;
+            height: 1.325em;
+            margin: 0 0.06em;
+            vertical-align: -0.4em;
+        }
+
+        .emoji--small {
+            width: 1em;
+            height: 1em;
+        }
+
+        .emoji--large {
+            width: 2.8em;
+            height: 2.8em;
+        }
+
+        .preamble {
+            display: grid;
+            margin: 0 0.3em 0.6em 0.3em;
+            max-width: 100%;
+            grid-template-columns: auto 1fr;
+        }
+
+        .preamble__guild-icon-container {
+            grid-column: 1;
+        }
+
+        .preamble__guild-icon {
+            max-width: 88px;
+            max-height: 88px;
+        }
+
+        .preamble__entries-container {
+            grid-column: 2;
+            margin-left: 0.6em;
+        }
+
+        .preamble__entry {
+            font-size: 1.4em;
+            color: #ffffff;
+        }
+
+        .preamble__entry--small {
+            font-size: 1em;
+        }
+
+        .chatlog {
+            max-width: 100%;
+        }
+
+        .chatlog__message-group {
+            display: grid;
+            margin: 0 0.6em;
+            padding: 0.9em 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            grid-template-columns: auto 1fr;
+        }
+
+        .chatlog__reference-symbol {
+            grid-column: 1;
+            margin: 8px 4px 4px 18px;
+            border-left: 2px solid #4f545c;
+            border-top: 2px solid #4f545c;
+            border-radius: 8px 0 0 0;
+        }
+
+        .chatlog__reference {
+            display: flex;
+            grid-column: 2;
+            margin-bottom: 0.25em;
+            font-size: 0.875em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            align-items: center;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-avatar {
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            margin-right: 0.25em;
+        }
+
+        .chatlog__reference-name {
+            margin-right: 0.3em;
+            font-weight: 600;
+        }
+
+        .chatlog__reference-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__reference-content a:hover {
+            text-decoration: none;
+        }
+
+        .chatlog__reference-link {
+            cursor: pointer;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-link * {
+            display: inline;
+            pointer-events: none;
+        }
+
+        .chatlog__reference-link:hover {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-link:hover *:not(.spoiler-text) {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-edited-timestamp {
+            margin-left: 0.25em;
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__author-avatar-container {
+            grid-column: 1;
+            width: 40px;
+            height: 40px;
+            margin-right: 16px;
+        }
+
+        .chatlog__author-avatar {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+
+        .chatlog__messages {
+            grid-column: 2;
+            min-width: 50%;
+        }
+
+        .chatlog__author-name {
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .chatlog__timestamp {
+            margin-left: 0.3em;
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__message {
+            padding: 0.1em 0.3em;
+            margin: 0 -0.3em;
+            background-color: transparent;
+            transition: background-color 1s ease;
+        }
+
+        .chatlog__message--highlighted {
+            background-color: rgba(114, 137, 218, 0.2);
+        }
+
+        .chatlog__message--pinned {
+            background-color: rgba(249, 168, 37, 0.05);
+        }
+
+        .chatlog__content {
+            font-size: 0.95em;
+            word-wrap: break-word;
+        }
+
+        .chatlog__edited-timestamp {
+            margin-left: 0.15em;
+            font-size: 0.8em;
+        }
+
+        .chatlog__attachment {
+            display: inline-block;
+            position: relative;
+            margin-top: 0.3em;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden {
+            cursor: pointer;
+            box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .chatlog__attachment--hidden * {
+            pointer-events: none;
+        }
+
+        .chatlog__attachment-spoiler-caption {
+            display: none;
+            z-index: 999;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 0.4em 0.8em;
+            background-color: rgba(0, 0, 0, 0.9);
+            border-radius: 20px;
+            color: #dcddde;
+            font-size: 0.9em;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-spoiler-caption {
+            display: block;
+        }
+
+        .chatlog__attachment--hidden:hover .chatlog__attachment-spoiler-caption {
+            color: #fff;
+        }
+
+        .chatlog__attachment-media {
+            vertical-align: top;
+            max-width: 45vw;
+            max-height: 500px;
+            border-radius: 3px;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-media {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic {
+            width: 100%;
+            max-width: 520px;
+            height: 40px;
+            padding: 10px;
+            background-color: #2f3136;
+            border: 1px solid #292b2f;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-generic {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic-icon {
+            float: left;
+            width: 30px;
+            height: 100%;
+            margin-right: 10px;
+        }
+
+        .chatlog__attachment-generic-size {
+            color: #72767d;
+            font-size: 12px;
+        }
+
+        .chatlog__attachment-generic-name {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__edited-timestamp {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__embed {
+            display: flex;
+            margin-top: 0.3em;
+            max-width: 520px;
+        }
+
+        .chatlog__embed-color-pill {
+            flex-shrink: 0;
+            width: 0.25em;
+            border-top-left-radius: 3px;
+            border-bottom-left-radius: 3px;
+        }
+
+        .chatlog__embed-color-pill--default {
+            background-color: #202225;
+        }
+
+        .chatlog__embed-content-container {
+            display: flex;
+            flex-direction: column;
+            padding: 0.5em 0.6em;
+            background-color: rgba(46, 48, 54, 0.3);
+            border: 1px solid rgba(46, 48, 54, 0.6);
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        .chatlog__embed-content {
+            display: flex;
+            width: 100%;
+        }
+
+        .chatlog__embed-text {
+            flex: 1;
+        }
+
+        .chatlog__embed-author {
+            display: flex;
+            margin-bottom: 0.3em;
+            align-items: center;
+        }
+
+        .chatlog__embed-author-icon {
+            margin-right: 0.5em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .chatlog__embed-author-name {
+            font-size: 0.875em;
+            font-weight: 600;
+            color: #ffffff
+        }
+
+        .chatlog__embed-author-name-link {
+            color: #ffffff;
+        }
+
+        .chatlog__embed-title {
+            margin-bottom: 0.2em;
+            font-size: 0.875em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-description {
+            font-weight: 500;
+            font-size: 0.85em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0 0.5em;
+        }
+
+        .chatlog__embed-field {
+            flex: 0;
+            min-width: 100%;
+            max-width: 506px;
+            padding-top: 0.6em;
+            font-size: 0.875em;
+        }
+
+        .chatlog__embed-field--inline {
+            flex: 1;
+            flex-basis: auto;
+            min-width: 150px;
+        }
+
+        .chatlog__embed-field-name {
+            margin-bottom: 0.2em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-field-value {
+            font-weight: 500;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-thumbnail {
+            flex: 0;
+            margin-left: 1.2em;
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-image-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-image {
+            max-width: 500px;
+            max-height: 400px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-footer {
+            margin-top: 0.6em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-footer-icon {
+            margin-right: 0.2em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+
+        .chatlog__embed-footer-text {
+            vertical-align: middle;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        .chatlog__embed-plainimage {
+            vertical-align: top;
+            max-width: 45vw;
+            max-height: 500px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-spotify {
+            border: 0;
+        }
+
+        .chatlog__embed-youtube-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-youtube {
+            border: 0;
+            border-radius: 3px;
+        }
+
+        .chatlog__reactions {
+            display: flex;
+        }
+
+        .chatlog__reaction {
+            display: flex;
+            align-items: center;
+            margin: 0.35em 0.1em 0.1em 0.1em;
+            padding: 0.2em 0.35em;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .chatlog__reaction-count {
+            min-width: 9px;
+            margin-left: 0.35em;
+            font-size: 0.875em;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .chatlog__bot-tag {
+            position: relative;
+            top: -.1em;
+            margin-left: 0.3em;
+            padding: 0.05em 0.3em;
+            border-radius: 3px;
+            line-height: 1.3;
+            background-color: #5865F2;
+            color: #ffffff;
+            font-size: 0.625em;
+            font-weight: 500;
+        }
+
+        .postamble {
+            margin: 1.4em 0.3em 0.6em 0.3em;
+            padding: 1em;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .postamble__entry {
+            color: #ffffff;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/solarized-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.pre--multiline').forEach(block => hljs.highlightBlock(block));
+        });
+    </script>
+
+    <script>
+        function scrollToMessage(event, id) {
+            var element = document.getElementById('message-' + id);
+
+            if (element) {
+                event.preventDefault();
+
+                element.classList.add('chatlog__message--highlighted');
+
+                window.scrollTo({
+                    top: element.getBoundingClientRect().top - document.body.getBoundingClientRect().top - (window.innerHeight / 2),
+                    behavior: 'smooth'
+                });
+
+                window.setTimeout(function() {
+                    element.classList.remove('chatlog__message--highlighted');
+                }, 2000);
+            }
+        }
+
+        function showSpoiler(event, element) {
+            if (element && element.classList.contains('spoiler-text--hidden')) {
+                event.preventDefault();
+                element.classList.remove('spoiler-text--hidden');
+            }
+            if (element && element.classList.contains('chatlog__attachment--hidden')) {
+                event.preventDefault();
+                element.classList.remove('chatlog__attachment--hidden');
+            }
+        }
+    </script>
+
+    <svg style="display: none">
+        <symbol id="icon-attachment" viewBox="0 0 720 960">
+            <path fill="#f4f5fb" d="M50,935a25,25,0,0,1-25-25V50A25,25,0,0,1,50,25H519.6L695,201.32V910a25,25,0,0,1-25,25Z" />
+            <path fill="#7789c4" d="M509.21,50,670,211.63V910H50V50H509.21M530,0H50A50,50,0,0,0,0,50V910a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50h0V191Z" />
+            <path fill="#f4f5fb" d="M530,215a25,25,0,0,1-25-25V50a25,25,0,0,1,16.23-23.41L693.41,198.77A25,25,0,0,1,670,215Z" />
+            <path fill="#7789c4" d="M530,70.71,649.29,190H530V70.71M530,0a50,50,0,0,0-50,50V190a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50Z" />
+        </symbol>
+    </svg>
+</head>
+<body>
+
+<div class="preamble">
+    <div class="preamble__guild-icon-container">
+        <img class="preamble__guild-icon" src="https://cdn.discordapp.com/icons/419745677585940482/a_36f1bfe78afb2a86f04ecdaeeeedeccd.png" alt="Guild icon" loading="lazy">
+    </div>
+    <div class="preamble__entries-container">
+        <div class="preamble__entry">DevOps, SRE, &amp; Infrastructure</div>
+        <div class="preamble__entry">#kubernetes-getting-started</div>
+
+
+    </div>
+</div>
+
+<div class="chatlog">
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:22</span>
+
+            <div class="chatlog__message " data-message-id="927582671683596369" id="message-927582671683596369" title="Message sent: 2022-01-03 15:22">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">This week&#39;s topic is getting started with Kubernetes! Where do people start? Below are some links to get started but please feel free to share all the info and links!
+
+ - <a href="https://kubernetes.io/docs/tutorials/kubernetes-basics/">https://kubernetes.io/docs/tutorials/kubernetes-basics/</a>
+ - <a href="https://www.cloudbees.com/blog/getting-started-with-kubernetes">https://www.cloudbees.com/blog/getting-started-with-kubernetes</a>
+ - <a href="https://kubernetes.io/docs/tutorials/">https://kubernetes.io/docs/tutorials/</a>
+ - <a href="https://k3s.io/">https://k3s.io/</a> - Lightweight Kubernetes
+ - <a href="https://minikube.sigs.k8s.io/docs/">https://minikube.sigs.k8s.io/docs/</a> - minikube</span>
+
+                        </div>
+                    </div>
+
+                    <div class="chatlog__attachment " onclick="">
+
+                            <a href="https://cdn.discordapp.com/attachments/927581228520062996/927582671868133386/Banner_15.jpg">
+                                <img class="chatlog__attachment-media" src="https://cdn.discordapp.com/attachments/927581228520062996/927582671868133386/Banner_15.jpg" alt="Image attachment" title="Image: Banner_15.jpg (15.72 KB)" loading="lazy">
+                            </a>
+                    </div>
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="100">
+                                <img class="emoji emoji--small" alt="&#128175;" src="https://twemoji.maxcdn.com/2/svg/1f4af.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">4</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/128897567349145600/d4ae1e8270d8e5bac61292ef8fb4ba28.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Thias#8888" data-user-id="128897567349145600" style="color: rgb(207,36,246)">Thias</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:24</span>
+
+            <div class="chatlog__message " data-message-id="927583092535877643" id="message-927583092535877643" title="Message sent: 2022-01-03 15:24">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://kube.academy/">https://kube.academy/</a> Too</span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://kube.academy/">
+                                                        <div class="markdown preserve-whitespace">KubeAcademy - Unlock your full potential with Kubernetes courses de...</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">Learn Kubernetes. From Experts. For Free.</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/jCGsFcArAk2mbyqjQfNrQNaAJOtmwZ4N5KUAe3zXOdg/https/kube.academy/storage/og-default.png">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/jCGsFcArAk2mbyqjQfNrQNaAJOtmwZ4N5KUAe3zXOdg/https/kube.academy/storage/og-default.png" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/675172094773952512/c2e7f92d57d242a747cf99850c3e9fdb.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="TheNakedZealot#0920" data-user-id="675172094773952512" style="">TheNakedZealot</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:24</span>
+
+            <div class="chatlog__message " data-message-id="927583109073997824" id="message-927583109073997824" title="Message sent: 2022-01-03 15:24">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://www.ibm.com/cloud/blog/video-kubernetes-explained">https://www.ibm.com/cloud/blog/video-kubernetes-explained</a>
+
+I really enjoyed this series when going over basics a few years back. Still seems like a solid introduction.</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-01-03 15:29">(edited)</span>
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://www.ibm.com/cloud/blog/video-kubernetes-explained">
+                                                        <div class="markdown preserve-whitespace">VIDEO – Kubernetes Explained</div>
+                                                    </a>
+                                            </div>
+
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/LDYEFrUuhYSZ_Aw3b532ZprinFlF6bSFQzgwDV-mTm4/%3Fitok%3DJz6e_WFJ/https/1.cms.s81c.com/sites/default/files/styles/ibm_cloud_wide_background/public/2019-03-20/blackintro7.jpg">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/LDYEFrUuhYSZ_Aw3b532ZprinFlF6bSFQzgwDV-mTm4/%3Fitok%3DJz6e_WFJ/https/1.cms.s81c.com/sites/default/files/styles/ibm_cloud_wide_background/public/2019-03-20/blackintro7.jpg" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/128897567349145600/d4ae1e8270d8e5bac61292ef8fb4ba28.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Thias#8888" style="color: rgb(207,36,246)">Thias</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927583092535877643&#39;)">
+<a href="https://kube.academy/">https://kube.academy/</a> Too                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/128897567349145600/d4ae1e8270d8e5bac61292ef8fb4ba28.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Thias#8888" data-user-id="128897567349145600" style="color: rgb(207,36,246)">Thias</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:24</span>
+
+            <div class="chatlog__message " data-message-id="927583157082021899" id="message-927583157082021899" title="Message sent: 2022-01-03 15:24">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Free courses from VMWare</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:24</span>
+
+            <div class="chatlog__message " data-message-id="927583278393851974" id="message-927583278393851974" title="Message sent: 2022-01-03 15:24">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://k3d.io/v5.2.2/">https://k3d.io/v5.2.2/</a> 
+<a href="https://kind.sigs.k8s.io/">https://kind.sigs.k8s.io/</a> 
+are useful for creating cluster locally inside docker</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/128897567349145600/d4ae1e8270d8e5bac61292ef8fb4ba28.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Thias#8888" data-user-id="128897567349145600" style="color: rgb(207,36,246)">Thias</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:25</span>
+
+            <div class="chatlog__message " data-message-id="927583374493769798" id="message-927583374493769798" title="Message sent: 2022-01-03 15:25">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://k9scli.io/">https://k9scli.io/</a> is also a genius tool</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="100">
+                                <img class="emoji emoji--small" alt="&#128175;" src="https://twemoji.maxcdn.com/2/svg/1f4af.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/675172094773952512/c2e7f92d57d242a747cf99850c3e9fdb.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="TheNakedZealot#0920" data-user-id="675172094773952512" style="">TheNakedZealot</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:30</span>
+
+            <div class="chatlog__message " data-message-id="927584650489126942" id="message-927584650489126942" title="Message sent: 2022-01-03 15:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I find most people need an actual thing <em>to do</em> with k8s in the beginning.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/128897567349145600/d4ae1e8270d8e5bac61292ef8fb4ba28.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Thias#8888" style="color: rgb(207,36,246)">Thias</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927583374493769798&#39;)">
+<a href="https://k9scli.io/">https://k9scli.io/</a> is also a genius tool                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:31</span>
+
+            <div class="chatlog__message " data-message-id="927584847428456478" id="message-927584847428456478" title="Message sent: 2022-01-03 15:31">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">As nice as that currently is the k9salpha has me worried that the project is not going to add any new features to the opensource version. Forcing you into a yearly subscription.
+<div class="quote">Just to be clear, we will continue to support K9s, fix P1 issues, update PRs and the project will remain free for all. K9sAlpha contains the next generation of features and enhancements for a nominal fee.
+</div><a href="https://k9salpha.io/">https://k9salpha.io/</a> <img loading="lazy" class="emoji " alt="😦" title="frowning" src="https://twemoji.maxcdn.com/2/svg/1f626.svg"> always sad day to see an OSS project go behind closed doors.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Nous#2788" style="color: rgb(240,183,179)">Nous</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927584847428456478&#39;)">
+As nice as that currently is the k9salpha has me worried that the project is not going to add any new features to the opensource version. Forcing you into a yearly subscription.
+<div class="quote">Just to be clear, we will continue to support K9s, fix P1 issues, update PRs and the project will remain free for all. K9sAlpha contains the next generation of features and enhancements for a nominal fee.
+</div><a href="https://k9salpha.io/">https://k9salpha.io/</a> <img loading="lazy" class="emoji " alt="😦" title="frowning" src="https://twemoji.maxcdn.com/2/svg/1f626.svg"> always sad day to see an OSS project go behind closed doors.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/675172094773952512/c2e7f92d57d242a747cf99850c3e9fdb.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="TheNakedZealot#0920" data-user-id="675172094773952512" style="">TheNakedZealot</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:31</span>
+
+            <div class="chatlog__message " data-message-id="927585080858263622" id="message-927585080858263622" title="Message sent: 2022-01-03 15:31">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Are you familiar with VS Code&#39;s k8s plugin?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:32</span>
+
+            <div class="chatlog__message " data-message-id="927585129365397615" id="message-927585129365397615" title="Message sent: 2022-01-03 15:32">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I dont really use vscode</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/148073845960605698/a_6fabc122367c7c7bf288a87471c7b27d.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="RRonaldM#8474" data-user-id="148073845960605698" style="">RonaldCarvalho</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:32</span>
+
+            <div class="chatlog__message " data-message-id="927585148130709514" id="message-927585148130709514" title="Message sent: 2022-01-03 15:32">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">What about the lens (<a href="https://k8slens.dev/)">https://k8slens.dev/)</a> one?</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-01-03 15:32">(edited)</span>
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill" style="background-color: rgba(255,255,255,255)"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://k8slens.dev/">
+                                                        <div class="markdown preserve-whitespace">Lens | The Kubernetes IDE</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">Lens IDE for Kubernetes. The only system you’ll ever need to take control of your Kubernetes clusters. It&#39;s open source and free. Download it today!</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-2.discordapp.net/external/P2lU0AqfsAychO32DmW6Pp5J_cU44gNcgs1IAasOU70/https/k8slens.dev/images/lens-og.png">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-2.discordapp.net/external/P2lU0AqfsAychO32DmW6Pp5J_cU44gNcgs1IAasOU70/https/k8slens.dev/images/lens-og.png" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Nous#2788" style="color: rgb(240,183,179)">Nous</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927584847428456478&#39;)">
+As nice as that currently is the k9salpha has me worried that the project is not going to add any new features to the opensource version. Forcing you into a yearly subscription.
+<div class="quote">Just to be clear, we will continue to support K9s, fix P1 issues, update PRs and the project will remain free for all. K9sAlpha contains the next generation of features and enhancements for a nominal fee.
+</div><a href="https://k9salpha.io/">https://k9salpha.io/</a> <img loading="lazy" class="emoji " alt="😦" title="frowning" src="https://twemoji.maxcdn.com/2/svg/1f626.svg"> always sad day to see an OSS project go behind closed doors.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/128897567349145600/d4ae1e8270d8e5bac61292ef8fb4ba28.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Thias#8888" data-user-id="128897567349145600" style="color: rgb(207,36,246)">Thias</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:32</span>
+
+            <div class="chatlog__message " data-message-id="927585229055623178" id="message-927585229055623178" title="Message sent: 2022-01-03 15:32">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Agreed</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/675172094773952512/c2e7f92d57d242a747cf99850c3e9fdb.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="TheNakedZealot#0920" data-user-id="675172094773952512" style="">TheNakedZealot</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:32</span>
+
+            <div class="chatlog__message " data-message-id="927585267987124285" id="message-927585267987124285" title="Message sent: 2022-01-03 15:32">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">No worries, just curious how k9 might differ in features from the k8&#39;s plugin in VS Code.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/128897567349145600/d4ae1e8270d8e5bac61292ef8fb4ba28.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Thias#8888" style="color: rgb(207,36,246)">Thias</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927585229055623178&#39;)">
+Agreed                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:33</span>
+
+            <div class="chatlog__message " data-message-id="927585389642936360" id="message-927585389642936360" title="Message sent: 2022-01-03 15:33">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I am keeping my eye on this as well: <a href="https://kdash.cli.rs/">https://kdash.cli.rs/</a> though not as refined as k9s when I last tried it.</span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill" style="background-color: rgba(21,21,21,255)"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://kdash.cli.rs/">
+                                                        <div class="markdown preserve-whitespace">KDash</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">A fast and simple dashboard for Kubernetes</div>
+                                            </div>
+
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/148073845960605698/a_6fabc122367c7c7bf288a87471c7b27d.gif?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="RRonaldM#8474" style="">RonaldCarvalho</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927585148130709514&#39;)">
+What about the lens (<a href="https://k8slens.dev/)">https://k8slens.dev/)</a> one?                    </span>
+
+                        <span class="chatlog__reference-edited-timestamp" title="2022-01-03 15:32">(edited)</span>
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:33</span>
+
+            <div class="chatlog__message " data-message-id="927585592177492049" id="message-927585592177492049" title="Message sent: 2022-01-03 15:33">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I hate the idea of an IDE for kube. <strong>You should not be editing kube cluster config by hand</strong>. It should all be in a git repo.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Nous#2788" style="color: rgb(240,183,179)">Nous</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927584847428456478&#39;)">
+As nice as that currently is the k9salpha has me worried that the project is not going to add any new features to the opensource version. Forcing you into a yearly subscription.
+<div class="quote">Just to be clear, we will continue to support K9s, fix P1 issues, update PRs and the project will remain free for all. K9sAlpha contains the next generation of features and enhancements for a nominal fee.
+</div><a href="https://k9salpha.io/">https://k9salpha.io/</a> <img loading="lazy" class="emoji " alt="😦" title="frowning" src="https://twemoji.maxcdn.com/2/svg/1f626.svg"> always sad day to see an OSS project go behind closed doors.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/693880123111243795/cc4e6786b9337c6e4307c68ea35488fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="JulioHM#2637" data-user-id="693880123111243795" style="">JulioHM</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:34</span>
+
+            <div class="chatlog__message " data-message-id="927585742287413279" id="message-927585742287413279" title="Message sent: 2022-01-03 15:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">you&#39;re right
+$99/year sub
+that&#39;s pretty steep IMO</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/148073845960605698/a_6fabc122367c7c7bf288a87471c7b27d.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="RRonaldM#8474" data-user-id="148073845960605698" style="">RonaldCarvalho</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:34</span>
+
+            <div class="chatlog__message " data-message-id="927585774881341480" id="message-927585774881341480" title="Message sent: 2022-01-03 15:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention" title="Nous#2788">@Nous</span>  yes, but i think you can use this tool for debuging purpose</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="927585867122483241" id="message-927585867122483241" title="Message sent: 2022-01-03 15:35">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">not to creating resources by hand, which i agree what you said</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:35</span>
+
+            <div class="chatlog__message " data-message-id="927585930620067840" id="message-927585930620067840" title="Message sent: 2022-01-03 15:35">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I dont like how they call it an IDE.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/148073845960605698/a_6fabc122367c7c7bf288a87471c7b27d.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="RRonaldM#8474" data-user-id="148073845960605698" style="">RonaldCarvalho</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:35</span>
+
+            <div class="chatlog__message " data-message-id="927585963872505918" id="message-927585963872505918" title="Message sent: 2022-01-03 15:35">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">yeah :/</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Nous#2788" style="color: rgb(240,183,179)">Nous</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927585592177492049&#39;)">
+I hate the idea of an IDE for kube. <strong>You should not be editing kube cluster config by hand</strong>. It should all be in a git repo.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/693880123111243795/cc4e6786b9337c6e4307c68ea35488fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="JulioHM#2637" data-user-id="693880123111243795" style="">JulioHM</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:37</span>
+
+            <div class="chatlog__message " data-message-id="927586544724881468" id="message-927586544724881468" title="Message sent: 2022-01-03 15:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Right? The api is so well structured.
+It should be simple enough to get the basic stuff working with any text editor. And if you are still using vim or vscode to scale up your infrastructure manually, you&#39;re doing it wrong.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:38</span>
+
+            <div class="chatlog__message " data-message-id="927586810316595240" id="message-927586810316595240" title="Message sent: 2022-01-03 15:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><img loading="lazy" class="emoji " alt="😕" title="confused" src="https://twemoji.maxcdn.com/2/svg/1f615.svg"> ?? vim and vscode are just editors. Lens is its own beast that does far too much IMO.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Nous#2788" style="color: rgb(240,183,179)">Nous</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927586810316595240&#39;)">
+<img loading="lazy" class="emoji " alt="😕" title="confused" src="https://twemoji.maxcdn.com/2/svg/1f615.svg"> ?? vim and vscode are just editors. Lens is its own beast that does far too much IMO.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/693880123111243795/cc4e6786b9337c6e4307c68ea35488fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="JulioHM#2637" data-user-id="693880123111243795" style="">JulioHM</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:40</span>
+
+            <div class="chatlog__message " data-message-id="927587150038454312" id="message-927587150038454312" title="Message sent: 2022-01-03 15:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">what I mean is.. you&#39;re right.
+no serious infrastructure should editing manifests by hand... but it&#39;s easy enough so you actually can to some level of experimenting and tunning.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:41</span>
+
+            <div class="chatlog__message " data-message-id="927587391965917204" id="message-927587391965917204" title="Message sent: 2022-01-03 15:41">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">You can edit manifests by hand - as long as they are in a git repo and appled to the cluster after you push via some automated means. Never editing them directly in the cluster manually though.</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="100">
+                                <img class="emoji emoji--small" alt="&#128175;" src="https://twemoji.maxcdn.com/2/svg/1f4af.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">2</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/675172094773952512/c2e7f92d57d242a747cf99850c3e9fdb.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="TheNakedZealot#0920" data-user-id="675172094773952512" style="">TheNakedZealot</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:49</span>
+
+            <div class="chatlog__message " data-message-id="927589512002011187" id="message-927589512002011187" title="Message sent: 2022-01-03 15:49">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">So, my thing is, there&#39;s a lot of links here... not a lot of context on what to do with them.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="927589573637320774" id="message-927589573637320774" title="Message sent: 2022-01-03 15:49">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It&#39;s easy to follow some instructions on getting k3s up, but what to do next?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="927589587302359110" id="message-927589587302359110" title="Message sent: 2022-01-03 15:49">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">That&#39;s really learning.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="927589785189634058" id="message-927589785189634058" title="Message sent: 2022-01-03 15:50">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I usually point new people to here for ideas: <a href="https://github.com/k8s-at-home/awesome-home-kubernetes">https://github.com/k8s-at-home/awesome-home-kubernetes</a></span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill" style="background-color: rgba(30,35,39,255)"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://github.com/k8s-at-home/awesome-home-kubernetes">
+                                                        <div class="markdown preserve-whitespace">GitHub - k8s-at-home/awesome-home-kubernetes: Awesome projects invo...</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">Awesome projects involving running Kubernetes at home - GitHub - k8s-at-home/awesome-home-kubernetes: Awesome projects involving running Kubernetes at home</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-2.discordapp.net/external/3b9pZph9AJUSvsh2WP9rYV26CUOkY3nyzoPZ7LQmSfI/https/opengraph.githubassets.com/f49713177b564884afe3c1b6288e6ad89a0c91fcbae2ef1fb396a6c1a6b8815e/k8s-at-home/awesome-home-kubernetes">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-2.discordapp.net/external/3b9pZph9AJUSvsh2WP9rYV26CUOkY3nyzoPZ7LQmSfI/https/opengraph.githubassets.com/f49713177b564884afe3c1b6288e6ad89a0c91fcbae2ef1fb396a6c1a6b8815e/k8s-at-home/awesome-home-kubernetes" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="thumbsup">
+                                <img class="emoji emoji--small" alt="&#128077;" src="https://twemoji.maxcdn.com/2/svg/1f44d.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">5</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/275672528838721538/4ae16db0c7d20b6d997acd14a137376b.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="KodingForKittehs#4360" data-user-id="275672528838721538" style="">Grimalkin</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 15:54</span>
+
+            <div class="chatlog__message " data-message-id="927590691738095696" id="message-927590691738095696" title="Message sent: 2022-01-03 15:54">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I started to learn k8s, I setup minikube and some of my containers in it, but it’s overkill for me when I can use AWS ECS</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/275672528838721538/4ae16db0c7d20b6d997acd14a137376b.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="KodingForKittehs#4360" style="">Grimalkin</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927590691738095696&#39;)">
+I started to learn k8s, I setup minikube and some of my containers in it, but it’s overkill for me when I can use AWS ECS                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/693880123111243795/cc4e6786b9337c6e4307c68ea35488fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="JulioHM#2637" data-user-id="693880123111243795" style="">JulioHM</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 16:02</span>
+
+            <div class="chatlog__message " data-message-id="927592670216478770" id="message-927592670216478770" title="Message sent: 2022-01-03 16:02">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I remember thinking that way when I started. Looks like too many layers of abstraction. I have to admit it takes time to get used to a new paradigm. That&#39;s even harder if you still need to catch up with traditional infrastructure concepts that most people took for granted for years. It&#39;s hard to diagnose issues for people who still haven&#39;t figured out how exactly DNS, load balancing, reverse proxies, and low level networking protocols work.
+
+Eventually I got over the fact that most of k8s runs itself and you can worry more about &quot;<em>which applications you are running</em>&quot;, than &quot;<em>how exactly to get them to run in the first place</em>&quot;.</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-01-03 16:02">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="thumbsup">
+                                <img class="emoji emoji--small" alt="&#128077;" src="https://twemoji.maxcdn.com/2/svg/1f44d.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/80732956108263424/604eb246277ef3920f60feb2de136a33.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="sathyabhat#2391" data-user-id="80732956108263424" style="color: rgb(255,203,70)">sathyabhat</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 17:02</span>
+
+            <div class="chatlog__message " data-message-id="927607993493749831" id="message-927607993493749831" title="Message sent: 2022-01-03 17:02">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">although the challenge is over, this is still a great way to pick up k8s and what to do with k8s based on your experience levels <a href="https://www.digitalocean.com/community/pages/kubernetes-challenge">https://www.digitalocean.com/community/pages/kubernetes-challenge</a></span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-01-03 17:03">(edited)</span>
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill" style="background-color: rgba(0,105,255,255)"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://www.digitalocean.com/community/pages/kubernetes-challenge">
+                                                        <div class="markdown preserve-whitespace">DigitalOcean Kubernetes Challenge | DigitalOcean</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">Whether you’re new to Kubernetes or have been running production clusters for years, DigitalOcean’s Kubernetes Challenge will give you an opportunity to level up your Kubernetes skill set before the end of the year.</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/prCw3VzuhC_iJe8gzrQzv1YjoXRUiOkl9v0Yo4G88PA/%3Fauto%3Dcompress%2Cformat%26rect%3D0%2C0%2C750%2C375%26w%3D2048%26h%3D1024/https/images.prismic.io/digitalocean/50a4ff74-fe20-4ad0-9cb2-138ec3013398_035575f2985fe451d86e717d73691e533a1a00545d7230900ed786341dc3c882.png">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/prCw3VzuhC_iJe8gzrQzv1YjoXRUiOkl9v0Yo4G88PA/%3Fauto%3Dcompress%2Cformat%26rect%3D0%2C0%2C750%2C375%26w%3D2048%26h%3D1024/https/images.prismic.io/digitalocean/50a4ff74-fe20-4ad0-9cb2-138ec3013398_035575f2985fe451d86e717d73691e533a1a00545d7230900ed786341dc3c882.png" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="heavy_plus_sign">
+                                <img class="emoji emoji--small" alt="➕" src="https://twemoji.maxcdn.com/2/svg/2795.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">5</span>
+                            </div>
+                            <div class="chatlog__reaction" title="100">
+                                <img class="emoji emoji--small" alt="&#128175;" src="https://twemoji.maxcdn.com/2/svg/1f4af.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">2</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/72254ff65c48dfa97e6305aa08381786.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="WeblWabl#4200" data-user-id="262322025350168577" style="color: rgb(6,227,236)">webl.ts &#127858;</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 20:06</span>
+
+            <div class="chatlog__message " data-message-id="927654213192937492" id="message-927654213192937492" title="Message sent: 2022-01-03 20:06">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Great stuff! this is the perfect topic for me haha</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="blush">
+                                <img class="emoji emoji--small" alt="&#128522;" src="https://twemoji.maxcdn.com/2/svg/1f60a.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">2</span>
+                            </div>
+                            <div class="chatlog__reaction" title="tada">
+                                <img class="emoji emoji--small" alt="&#127881;" src="https://twemoji.maxcdn.com/2/svg/1f389.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/80732956108263424/604eb246277ef3920f60feb2de136a33.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="sathyabhat#2391" style="color: rgb(255,203,70)">sathyabhat</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927607993493749831&#39;)">
+although the challenge is over, this is still a great way to pick up k8s and what to do with k8s based on your experience levels <a href="https://www.digitalocean.com/community/pages/kubernetes-challenge">https://www.digitalocean.com/community/pages/kubernetes-challenge</a>                    </span>
+
+                        <span class="chatlog__reference-edited-timestamp" title="2022-01-03 17:03">(edited)</span>
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/72254ff65c48dfa97e6305aa08381786.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="WeblWabl#4200" data-user-id="262322025350168577" style="color: rgb(6,227,236)">webl.ts &#127858;</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 20:06</span>
+
+            <div class="chatlog__message " data-message-id="927654266200539146" id="message-927654266200539146" title="Message sent: 2022-01-03 20:06">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Going to definitely do this</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/148073845960605698/a_6fabc122367c7c7bf288a87471c7b27d.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="RRonaldM#8474" data-user-id="148073845960605698" style="">RonaldCarvalho</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 21:37</span>
+
+            <div class="chatlog__message " data-message-id="927677108334002246" id="message-927677108334002246" title="Message sent: 2022-01-03 21:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">i think its not available anymore =/</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-01-03 21:37">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/199299030864363521/6fa9a981f7db68c4aff2074c8eab0814.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nullbuilt#0588" data-user-id="199299030864363521" style="">Nullbuilt</span>
+
+
+        <span class="chatlog__timestamp">2022-01-03 21:48</span>
+
+            <div class="chatlog__message " data-message-id="927679721838354474" id="message-927679721838354474" title="Message sent: 2022-01-03 21:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Thanks for all the shares.</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="thistbh">
+                                <img class="emoji emoji--small" alt="thistbh" src="https://cdn.discordapp.com/emojis/874697821926850591.png" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/208543428672225291/db6998d2f82829a72df7451dd71be160.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="sz#4950" data-user-id="208543428672225291" style="">sz</span>
+
+
+        <span class="chatlog__timestamp">2022-01-04 16:54</span>
+
+            <div class="chatlog__message " data-message-id="927968356588470332" id="message-927968356588470332" title="Message sent: 2022-01-04 16:54">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Hey, I started with k8s thanks to your links and now Im wondering, is it normal that <span class="pre pre--inline">helm upgrade --install gitlab</span> consume lots of ram (usage goes from 1.5gb to max 16gb in my minikube and i have to terminate early or go oom <img loading="lazy" class="emoji " alt="😅" title="sweat_smile" src="https://twemoji.maxcdn.com/2/svg/1f605.svg"> ) Guide on gitlab said its supposed to take like 6gb instead</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/208543428672225291/db6998d2f82829a72df7451dd71be160.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="sz#4950" style="">sz</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927968356588470332&#39;)">
+Hey, I started with k8s thanks to your links and now Im wondering, is it normal that <span class="pre pre--inline">helm upgrade --install gitlab</span> consume lots of ram (usage goes from 1.5gb to max 16gb in my minikube and i have to terminate early or go oom <img loading="lazy" class="emoji " alt="😅" title="sweat_smile" src="https://twemoji.maxcdn.com/2/svg/1f605.svg"> ) Guide on gitlab said its supposed to take like 6gb instead                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/678627759617998865/4b969b65e9517a806fb00aaf15e7bce2.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Aankhen#6432" data-user-id="678627759617998865" style="">Aankhen</span>
+
+
+        <span class="chatlog__timestamp">2022-01-04 17:05</span>
+
+            <div class="chatlog__message " data-message-id="927971105262698536" id="message-927971105262698536" title="Message sent: 2022-01-04 17:05">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It depends on your configuration, but 16 GB sounds like a lot. If you enable the metrics-server addon and watch the dashboard (<a href="https://github.com/kubernetes/minikube/issues/5642#issuecomment-710077341">https://github.com/kubernetes/minikube/issues/5642#issuecomment-710077341</a>), do you see anything that’s eating up a lot of RAM?</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-01-04 17:06">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/208543428672225291/db6998d2f82829a72df7451dd71be160.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="sz#4950" style="">sz</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927968356588470332&#39;)">
+Hey, I started with k8s thanks to your links and now Im wondering, is it normal that <span class="pre pre--inline">helm upgrade --install gitlab</span> consume lots of ram (usage goes from 1.5gb to max 16gb in my minikube and i have to terminate early or go oom <img loading="lazy" class="emoji " alt="😅" title="sweat_smile" src="https://twemoji.maxcdn.com/2/svg/1f605.svg"> ) Guide on gitlab said its supposed to take like 6gb instead                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/693880123111243795/cc4e6786b9337c6e4307c68ea35488fa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="JulioHM#2637" data-user-id="693880123111243795" style="">JulioHM</span>
+
+
+        <span class="chatlog__timestamp">2022-01-04 18:04</span>
+
+            <div class="chatlog__message " data-message-id="927985815513088010" id="message-927985815513088010" title="Message sent: 2022-01-04 18:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">gitlab is a loaded software stack.. i would not be surprised with that level of RAM being used</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/273687438751301633/6988617a494c0cd3affb8926ae326ed3.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Marcus H#9589" data-user-id="273687438751301633" style="color: rgb(254,95,85)">Marcus H</span>
+
+
+        <span class="chatlog__timestamp">2022-01-04 18:28</span>
+
+            <div class="chatlog__message " data-message-id="927991811828490262" id="message-927991811828490262" title="Message sent: 2022-01-04 18:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">16 GB sounds like way too much</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/128897567349145600/d4ae1e8270d8e5bac61292ef8fb4ba28.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Thias#8888" data-user-id="128897567349145600" style="color: rgb(207,36,246)">Thias</span>
+
+
+        <span class="chatlog__timestamp">2022-01-04 18:29</span>
+
+            <div class="chatlog__message " data-message-id="927992040627789884" id="message-927992040627789884" title="Message sent: 2022-01-04 18:29">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">For a base install sounds weird - But 16gb is easy with cicd <img loading="lazy" class="emoji " alt="blaze" title="blaze" src="https://cdn.discordapp.com/emojis/350426514262720514.png"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/148073845960605698/a_6fabc122367c7c7bf288a87471c7b27d.gif?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="RRonaldM#8474" style="">RonaldCarvalho</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;927677108334002246&#39;)">
+i think its not available anymore =/                    </span>
+
+                        <span class="chatlog__reference-edited-timestamp" title="2022-01-03 21:37">(edited)</span>
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/80732956108263424/604eb246277ef3920f60feb2de136a33.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="sathyabhat#2391" data-user-id="80732956108263424" style="color: rgb(255,203,70)">sathyabhat</span>
+
+
+        <span class="chatlog__timestamp">2022-01-04 19:48</span>
+
+            <div class="chatlog__message " data-message-id="928012061366161498" id="message-928012061366161498" title="Message sent: 2022-01-04 19:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">you can always bring up a local kubernetes cluster and try it out</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/148073845960605698/a_6fabc122367c7c7bf288a87471c7b27d.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="RRonaldM#8474" data-user-id="148073845960605698" style="">RonaldCarvalho</span>
+
+
+        <span class="chatlog__timestamp">2022-01-04 19:50</span>
+
+            <div class="chatlog__message " data-message-id="928012567975165984" id="message-928012567975165984" title="Message sent: 2022-01-04 19:50">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention" title="sathyabhat#2391">@sathyabhat</span> yes, I know. I was sad for the challenge haha</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/80732956108263424/604eb246277ef3920f60feb2de136a33.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="sathyabhat#2391" data-user-id="80732956108263424" style="color: rgb(255,203,70)">sathyabhat</span>
+
+
+        <span class="chatlog__timestamp">2022-01-04 19:50</span>
+
+            <div class="chatlog__message " data-message-id="928012654642090004" id="message-928012654642090004" title="Message sent: 2022-01-04 19:50">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">ah right</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/352974808864129035/2f65218e971453e32bcae1d1e8090bb3.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Teru#7306" data-user-id="352974808864129035" style="">Teru</span>
+
+
+        <span class="chatlog__timestamp">2022-01-05 01:59</span>
+
+            <div class="chatlog__message " data-message-id="928105310109990963" id="message-928105310109990963" title="Message sent: 2022-01-05 01:59">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">As a complete beginner, The Kubernetes Book by Nigel Poulton was the perfect introduction to k8s when I had to dive right in and get clusters up and running for work</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="thumbsup">
+                                <img class="emoji emoji--small" alt="&#128077;" src="https://twemoji.maxcdn.com/2/svg/1f44d.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/352974808864129035/2f65218e971453e32bcae1d1e8090bb3.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Teru#7306" style="">Teru</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;928105310109990963&#39;)">
+As a complete beginner, The Kubernetes Book by Nigel Poulton was the perfect introduction to k8s when I had to dive right in and get clusters up and running for work                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2022-01-05 07:47</span>
+
+            <div class="chatlog__message " data-message-id="928193024792617030" id="message-928193024792617030" title="Message sent: 2022-01-05 07:47">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">As another beginner I agree. I followed the same path to dive into k8s</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-01-05 07:48">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/161154369763409921/51812da10240c9ebf55c47ba4c3d8daa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="kahnwong#7593" data-user-id="161154369763409921" style="">kahnwong</span>
+
+
+        <span class="chatlog__timestamp">2022-01-05 11:25</span>
+
+            <div class="chatlog__message " data-message-id="928247804508389376" id="message-928247804508389376" title="Message sent: 2022-01-05 11:25">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><img loading="lazy" class="emoji " alt="☸" title="☸" src="https://twemoji.maxcdn.com/2/svg/2638.svg">️</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="928248940460130344" id="message-928248940460130344" title="Message sent: 2022-01-05 11:29">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Playing with infra stuff is how I get high
+And k8s is the next high I&#39;m aiming for</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="eyes">
+                                <img class="emoji emoji--small" alt="&#128064;" src="https://twemoji.maxcdn.com/2/svg/1f440.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">3</span>
+                            </div>
+                            <div class="chatlog__reaction" title="grin">
+                                <img class="emoji emoji--small" alt="&#128513;" src="https://twemoji.maxcdn.com/2/svg/1f601.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">5</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/91656167956176896/a_27b7aa206e9a219891291abb5b0aad33.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="snuufix#6969" data-user-id="91656167956176896" style="color: rgb(6,227,236)">snuufix</span>
+
+
+        <span class="chatlog__timestamp">2022-01-05 12:12</span>
+
+            <div class="chatlog__message " data-message-id="928259669577826304" id="message-928259669577826304" title="Message sent: 2022-01-05 12:12">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Oh u’ll OD. <img loading="lazy" class="emoji " alt="seja" title="seja" src="https://cdn.discordapp.com/emojis/264905617456496661.png"></span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="100">
+                                <img class="emoji emoji--small" alt="&#128175;" src="https://twemoji.maxcdn.com/2/svg/1f4af.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/161154369763409921/51812da10240c9ebf55c47ba4c3d8daa.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="kahnwong#7593" style="">kahnwong</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;928248940460130344&#39;)">
+Playing with infra stuff is how I get high
+And k8s is the next high I&#39;m aiming for                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2022-01-05 13:58</span>
+
+            <div class="chatlog__message " data-message-id="928286385872461924" id="message-928286385872461924" title="Message sent: 2022-01-05 13:58">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It is a really good stuff
+<em>sniff sniff</em>
+I decreased amount of code 10 times after refactorization to k8s. Infra became simple and powerful.</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-01-05 13:59">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/161154369763409921/51812da10240c9ebf55c47ba4c3d8daa.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="kahnwong#7593" data-user-id="161154369763409921" style="">kahnwong</span>
+
+
+        <span class="chatlog__timestamp">2022-01-05 14:03</span>
+
+            <div class="chatlog__message " data-message-id="928287480074096680" id="message-928287480074096680" title="Message sent: 2022-01-05 14:03">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">And EKS can eat <img loading="lazy" class="emoji " alt="💩" title="poop" src="https://twemoji.maxcdn.com/2/svg/1f4a9.svg">lol</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/809445393556963375/5a8c81af1ae229832f4813bb933ea24d.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="technophilenomad#6742" data-user-id="809445393556963375" style="">technophilenomad</span>
+
+
+        <span class="chatlog__timestamp">2022-01-05 15:05</span>
+
+            <div class="chatlog__message " data-message-id="928303311680065666" id="message-928303311680065666" title="Message sent: 2022-01-05 15:05">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Someone pls explain how to solve real life scenarios that we encounter in k8s</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Darkwind#7896" style="">Darkwind</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;928286385872461924&#39;)">
+It is a really good stuff
+<em>sniff sniff</em>
+I decreased amount of code 10 times after refactorization to k8s. Infra became simple and powerful.                    </span>
+
+                        <span class="chatlog__reference-edited-timestamp" title="2022-01-05 13:59">(edited)</span>
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/72254ff65c48dfa97e6305aa08381786.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="WeblWabl#4200" data-user-id="262322025350168577" style="color: rgb(6,227,236)">webl.ts &#127858;</span>
+
+
+        <span class="chatlog__timestamp">2022-01-05 15:11</span>
+
+            <div class="chatlog__message " data-message-id="928304675311194182" id="message-928304675311194182" title="Message sent: 2022-01-05 15:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">What services are you running in the cluster and how did you decrease the codebase? Jw</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/72254ff65c48dfa97e6305aa08381786.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="WeblWabl#4200" style="color: rgb(6,227,236)">webl.ts &#127858;</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;928304675311194182&#39;)">
+What services are you running in the cluster and how did you decrease the codebase? Jw                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2022-01-05 15:17</span>
+
+            <div class="chatlog__message " data-message-id="928306129296044053" id="message-928306129296044053" title="Message sent: 2022-01-05 15:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Nginx frontend from Vue.js
+Master and Slaves Django/Celery Backends
+Two Redis DBs without persistence.
+Additional docker CLI app
+
+Initially I was deploying with Gitlab CI / Terraform / Docker-compose / Ansible / Dockerfiles
+Due to.... a bit self made approach, the code was overbloated in terms of additional Dockerfiles unefficiently used to add stuff, where it would be better to insert via Volumes (k8s allowed me just to point paths to files in configmaps)
+Ansible code was a bit overbloated? Migrating to managed k8s removed it.
+I had at ansible level basic server configurations / firewall-iptables shenanigans. Managed k8s removed the need, k8s exposes to public access only services to which I provided LoadBalancer/NodePort services.
+Scripts/(At ansible) which were needed just to point different parts of infrastructure to each other, where which part has which IP address, became not needed too. k8s internal DNS thing works by default without any code
+Basically all Ansible code was deleted.
+Unnecessary dockerfiles were removed, I can use basic images like Nginx without changes in k8s comfortably
+And Terraform code was all cut down to raise just one cluster + several node pools (with setting necessary node labels) and setting up domain records. That&#39;s it.</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-01-05 15:22">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="raised_hands">
+                                <img class="emoji emoji--small" alt="&#128588;" src="https://twemoji.maxcdn.com/2/svg/1f64c.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">3</span>
+                            </div>
+                            <div class="chatlog__reaction" title="fire">
+                                <img class="emoji emoji--small" alt="&#128293;" src="https://twemoji.maxcdn.com/2/svg/1f525.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">3</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262322025350168577/72254ff65c48dfa97e6305aa08381786.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="WeblWabl#4200" data-user-id="262322025350168577" style="color: rgb(6,227,236)">webl.ts &#127858;</span>
+
+
+        <span class="chatlog__timestamp">2022-01-05 15:17</span>
+
+            <div class="chatlog__message " data-message-id="928306301564510228" id="message-928306301564510228" title="Message sent: 2022-01-05 15:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Oh okay yeah that makes sense</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="928306324939354172" id="message-928306324939354172" title="Message sent: 2022-01-05 15:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Cool!</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/893160058228203560/64be02797a2cfc0a43e534e5a38bfbc4.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ThatOneTallKid#3951" data-user-id="893160058228203560" style="">ThatOneTallKid</span>
+
+
+        <span class="chatlog__timestamp">2022-01-06 06:38</span>
+
+            <div class="chatlog__message " data-message-id="928538084046430269" id="message-928538084046430269" title="Message sent: 2022-01-06 06:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">does anybody know how to stop a kubernetes cluster in gcp ?
+when I am using dataproc command , it says that it cannot find the cluster (Zonal)
+<div class="pre pre--multiline nohighlight">gcloud dataproc cluster stop cluster_name --project project_name --region us-west1 </div>
+is there any zone arg ??</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2022-01-06 11:19</span>
+
+            <div class="chatlog__message " data-message-id="928608679480139876" id="message-928608679480139876" title="Message sent: 2022-01-06 11:19">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://shly.link/qQwn9">https://shly.link/qQwn9</a>
+K8s infographics</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-01-06 11:20">(edited)</span>
+                        </div>
+                    </div>
+
+                    <div class="chatlog__attachment " onclick="">
+
+                            <a href="https://cdn.discordapp.com/attachments/927581228520062996/928608678389641216/K8s_cloud-native-ops_Infographic.png">
+                                <img class="chatlog__attachment-media" src="https://cdn.discordapp.com/attachments/927581228520062996/928608678389641216/K8s_cloud-native-ops_Infographic.png" alt="Image attachment" title="Image: K8s_cloud-native-ops_Infographic.png (527.27 KB)" loading="lazy">
+                            </a>
+                    </div>
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://shly.link/qQwn9">
+                                                        <div class="markdown preserve-whitespace">Kubernetes  infographic: usage of cloud native technology in 2021 |...</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">2021 has been an interesting year for the Kubernetes and cloud native ecosystem.&#160; Due to the pandemic, cloud adoption saw a big spike in adoption. As the year wraps up soon, we wanted to reflect on the top findings from the Kubernetes and cloud native operations report and we have a cool infographic for you.  […]</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/P3lIODXS08M5Z2fehk1h7Yy0LCx14H39Mt9KwL3DFJ8/https/ubuntu.com/wp-content/uploads/f001/K8sinfographic_banner_Grad_1200x628.jpeg">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/P3lIODXS08M5Z2fehk1h7Yy0LCx14H39Mt9KwL3DFJ8/https/ubuntu.com/wp-content/uploads/f001/K8sinfographic_banner_Grad_1200x628.jpeg" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/893160058228203560/64be02797a2cfc0a43e534e5a38bfbc4.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="ThatOneTallKid#3951" style="">ThatOneTallKid</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;928538084046430269&#39;)">
+does anybody know how to stop a kubernetes cluster in gcp ?
+when I am using dataproc command , it says that it cannot find the cluster (Zonal)
+<div class="pre pre--multiline nohighlight">gcloud dataproc cluster stop cluster_name --project project_name --region us-west1 </div>
+is there any zone arg ??                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/e4ae00832c0f3eebd736d69037de1e87.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2022-01-06 11:22</span>
+
+            <div class="chatlog__message " data-message-id="928609461126443028" id="message-928609461126443028" title="Message sent: 2022-01-06 11:22">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://cloud.google.com/kubernetes-engine/docs/how-to/managing-clusters">https://cloud.google.com/kubernetes-engine/docs/how-to/managing-clusters</a>
+<div class="quote">To view all clusters in your default zone:
+<span class="pre pre--inline">gcloud container clusters list</span>
+</div>perhaps to try finding the cluster for starters</span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill" style="background-color: rgba(3,155,229,255)"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://cloud.google.com/kubernetes-engine/docs/how-to/managing-clusters">
+                                                        <div class="markdown preserve-whitespace">Managing clusters &#160;|&#160; Kubernetes Engine Documentation &#160;|&#160; Google Cl...</div>
+                                                    </a>
+                                            </div>
+
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-2.discordapp.net/external/PCKG7k7Az8d-C1rP8eRzROVPDQo7GhXkD52Re34TFg4/https/cloud.google.com/_static/cloud/images/social-icon-google-cloud-1200-630.png">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-2.discordapp.net/external/PCKG7k7Az8d-C1rP8eRzROVPDQo7GhXkD52Re34TFg4/https/cloud.google.com/_static/cloud/images/social-icon-google-cloud-1200-630.png" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+            <div class="chatlog__message " data-message-id="928610008436998155" id="message-928610008436998155" title="Message sent: 2022-01-06 11:24">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">than when you found the name and that it exists in region for sure, trying to stop it
+gcloud dataproc clusters stop <span class="pre pre--inline">cluster-name</span> --region=<span class="pre pre--inline">region</span></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/439121172467154946/cb834fbdf33c82bbe7ac186822669ce9.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mr.duckyg#2947" data-user-id="439121172467154946" style="">norway.1337.hax0r #fraud is scam</span>
+
+
+        <span class="chatlog__timestamp">2022-01-06 12:25</span>
+
+            <div class="chatlog__message " data-message-id="928625318984556594" id="message-928625318984556594" title="Message sent: 2022-01-06 12:25">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">what can is a use case for kubernettes</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/439121172467154946/cb834fbdf33c82bbe7ac186822669ce9.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="mr.duckyg#2947" style="">norway.1337.hax0r #fraud is scam</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;928625318984556594&#39;)">
+what can is a use case for kubernettes                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/678627759617998865/4b969b65e9517a806fb00aaf15e7bce2.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Aankhen#6432" data-user-id="678627759617998865" style="">Aankhen</span>
+
+
+        <span class="chatlog__timestamp">2022-01-06 12:33</span>
+
+            <div class="chatlog__message " data-message-id="928627295038603285" id="message-928627295038603285" title="Message sent: 2022-01-06 12:33">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Running an arbitrary number of applications or services on a fixed number of machines while isolating them from each other and from the outside world except where you specify, with semi-automatic replication and self-healing.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-01-06 12:34</span>
+
+            <div class="chatlog__message " data-message-id="928627556436049930" id="message-928627556436049930" title="Message sent: 2022-01-06 12:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">And works as a cloud platform abstraction layer</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="928627780432822342" id="message-928627780432822342" title="Message sent: 2022-01-06 12:35">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">As well as makes it easier to employ some best practices when it comes to deployment of services (like doing canary deployments).</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/439121172467154946/cb834fbdf33c82bbe7ac186822669ce9.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mr.duckyg#2947" data-user-id="439121172467154946" style="">norway.1337.hax0r #fraud is scam</span>
+
+
+        <span class="chatlog__timestamp">2022-01-06 12:35</span>
+
+            <div class="chatlog__message " data-message-id="928627836590370856" id="message-928627836590370856" title="Message sent: 2022-01-06 12:35">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">can i design a react website and host it with kubenettes ?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="928628087757877279" id="message-928628087757877279" title="Message sent: 2022-01-06 12:36">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">but how is container and  DBs</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-01-06 12:36">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-01-06 12:37</span>
+
+            <div class="chatlog__message " data-message-id="928628246357114910" id="message-928628246357114910" title="Message sent: 2022-01-06 12:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Well, yes... though a pure react website can be hosted on a static site hosting provider for free with minimal effort. Or do you mean that it has a backend as well?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/439121172467154946/cb834fbdf33c82bbe7ac186822669ce9.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="mr.duckyg#2947" style="">norway.1337.hax0r #fraud is scam</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;928627836590370856&#39;)">
+can i design a react website and host it with kubenettes ?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/678627759617998865/4b969b65e9517a806fb00aaf15e7bce2.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Aankhen#6432" data-user-id="678627759617998865" style="">Aankhen</span>
+
+
+        <span class="chatlog__timestamp">2022-01-06 12:37</span>
+
+            <div class="chatlog__message " data-message-id="928628265558634567" id="message-928628265558634567" title="Message sent: 2022-01-06 12:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Your React website is rendered entirely on the client side unless you specifically configure SSR, so you can serve it through NGINX running in Kubernetes or Caddy running in a VM or Netlify or an S3 bucket…</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/678627759617998865/4b969b65e9517a806fb00aaf15e7bce2.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Aankhen#6432" style="">Aankhen</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;928628265558634567&#39;)">
+Your React website is rendered entirely on the client side unless you specifically configure SSR, so you can serve it through NGINX running in Kubernetes or Caddy running in a VM or Netlify or an S3 bucket…                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/439121172467154946/cb834fbdf33c82bbe7ac186822669ce9.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mr.duckyg#2947" data-user-id="439121172467154946" style="">norway.1337.hax0r #fraud is scam</span>
+
+
+        <span class="chatlog__timestamp">2022-01-06 14:48</span>
+
+            <div class="chatlog__message " data-message-id="928661263200944278" id="message-928661263200944278" title="Message sent: 2022-01-06 14:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">since i am using nextjs and it dose ssr but i also just want somthing to host with kubernettes so i think i am going to add a DB to it</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-01-06 14:48">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/439121172467154946/cb834fbdf33c82bbe7ac186822669ce9.png?size=40" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="mr.duckyg#2947" style="">norway.1337.hax0r #fraud is scam</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;928661263200944278&#39;)">
+since i am using nextjs and it dose ssr but i also just want somthing to host with kubernettes so i think i am going to add a DB to it                    </span>
+
+                        <span class="chatlog__reference-edited-timestamp" title="2022-01-06 14:48">(edited)</span>
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/678627759617998865/4b969b65e9517a806fb00aaf15e7bce2.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Aankhen#6432" data-user-id="678627759617998865" style="">Aankhen</span>
+
+
+        <span class="chatlog__timestamp">2022-01-06 15:03</span>
+
+            <div class="chatlog__message " data-message-id="928665071800971294" id="message-928665071800971294" title="Message sent: 2022-01-06 15:03">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Okay. Yes, you can host a hybrid Next.js application in Kubernetes. Generally speaking, if it can run as a container, it can run under Kubernetes. If it can be separated into multiple containers, you can probably make it run even better under Kubernetes.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="928665144643444787" id="message-928665144643444787" title="Message sent: 2022-01-06 15:03">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It’s inadvisable to put your database inside Kubernetes, though. If you can, you should host it externally.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/439121172467154946/cb834fbdf33c82bbe7ac186822669ce9.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mr.duckyg#2947" data-user-id="439121172467154946" style="">norway.1337.hax0r #fraud is scam</span>
+
+
+        <span class="chatlog__timestamp">2022-01-06 15:14</span>
+
+            <div class="chatlog__message " data-message-id="928667904113790977" id="message-928667904113790977" title="Message sent: 2022-01-06 15:14">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Ok then i am going to host db extarnaly</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="nw3gooner#5141" data-user-id="281535240252424193" style="">nw3gooner</span>
+
+
+        <span class="chatlog__timestamp">2022-01-08 18:30</span>
+
+            <div class="chatlog__message " data-message-id="929442011206000681" id="message-929442011206000681" title="Message sent: 2022-01-08 18:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Can we pin those resources for getting started on the top of the chat?</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="thumbsup">
+                                <img class="emoji emoji--small" alt="&#128077;" src="https://twemoji.maxcdn.com/2/svg/1f44d.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sick)</span>
+
+
+        <span class="chatlog__timestamp">2022-01-08 20:07</span>
+
+            <div class="chatlog__message " data-message-id="929466372927414324" id="message-929466372927414324" title="Message sent: 2022-01-08 20:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://canary.discord.com/channels/419745677585940482/927581228520062996/927582671683596369">https://canary.discord.com/channels/419745677585940482/927581228520062996/927582671683596369</a></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="nw3gooner#5141" style="">nw3gooner</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;929442011206000681&#39;)">
+Can we pin those resources for getting started on the top of the chat?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/247176974164819968/c685a0d709f13aa82dab5b0fce68d1a5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Astral#0524" data-user-id="247176974164819968" style="color: rgb(6,227,236)">Astral [She / Her] (Sick)</span>
+
+
+        <span class="chatlog__timestamp">2022-01-08 20:08</span>
+
+            <div class="chatlog__message " data-message-id="929466493052276736" id="message-929466493052276736" title="Message sent: 2022-01-08 20:08">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Channel will be deleted when the next topic comes but will be available on the site</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/526897307489402891/0d0d88d848adfd8e7c38937b69c13988.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="uplime#4242" data-user-id="526897307489402891" style="">uplime</span>
+
+
+        <span class="chatlog__timestamp">2022-01-08 21:42</span>
+
+            <div class="chatlog__message " data-message-id="929490325649649685" id="message-929490325649649685" title="Message sent: 2022-01-08 21:42">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">how come they aren&#39;t archived, out of curiosity?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/c5016a850f22b22934c259a0e396802c.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-01-08 21:44</span>
+
+            <div class="chatlog__message " data-message-id="929490715371786330" id="message-929490715371786330" title="Message sent: 2022-01-08 21:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">They are? Through the DSI site</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="929490809923973140" id="message-929490809923973140" title="Message sent: 2022-01-08 21:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I don&#39;t want to have hundreds of old channels in the discord guild, so we export them to the site</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/526897307489402891/0d0d88d848adfd8e7c38937b69c13988.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="uplime#4242" data-user-id="526897307489402891" style="">uplime</span>
+
+
+        <span class="chatlog__timestamp">2022-01-08 21:45</span>
+
+            <div class="chatlog__message " data-message-id="929490934553538593" id="message-929490934553538593" title="Message sent: 2022-01-08 21:45">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">ah ok</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="nw3gooner#5141" style="">nw3gooner</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;929442011206000681&#39;)">
+Can we pin those resources for getting started on the top of the chat?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2022-01-09 08:38</span>
+
+            <div class="chatlog__message " data-message-id="929655434191732748" id="message-929655434191732748" title="Message sent: 2022-01-09 08:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Just remember, this channel gets deleted</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/275110971255685120/0215f8b15b75469bb2a1dd40b8f071e5.png?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Quozlet#3344" data-user-id="275110971255685120" style="color: rgb(255,203,70)">Quozlet</span>
+
+
+        <span class="chatlog__timestamp">2022-01-09 10:44</span>
+
+            <div class="chatlog__message " data-message-id="929687017565077514" id="message-929687017565077514" title="Message sent: 2022-01-09 10:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://skaffold.dev/">https://skaffold.dev/</a></span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://skaffold.dev/">
+                                                        <div class="markdown preserve-whitespace">Skaffold</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">Easy and Repeatable Kubernetes Development</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-2.discordapp.net/external/YmCDykxoM4IIHCvF7OVm2IHwBf7qyQMBPnA1uvhWUGE/https/skaffold.dev/featured-background.jpeg">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-2.discordapp.net/external/YmCDykxoM4IIHCvF7OVm2IHwBf7qyQMBPnA1uvhWUGE/https/skaffold.dev/featured-background.jpeg" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-01-09 10:46</span>
+
+            <div class="chatlog__message " data-message-id="929687530331324456" id="message-929687530331324456" title="Message sent: 2022-01-09 10:46">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Similar to skaffold:
+<a href="https://tilt.dev/">https://tilt.dev/</a>
+<a href="https://devspace.sh/">https://devspace.sh/</a></span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://tilt.dev/">
+                                                        <div class="markdown preserve-whitespace">Tilt</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">Kubernetes for Prod, Tilt for Dev</div>
+                                            </div>
+
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://devspace.sh/">
+                                                        <div class="markdown preserve-whitespace">DevSpace - The Fastest Developer Tool for Kubernetes (open-source)</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">DevSpace is an open-source CLI tool that allows you to accelerate your development workflow when building applications on top of Kubernetes. It provides a powerful localhost UI and uses hot reloading to update containers while you are coding.</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-2.discordapp.net/external/BtjhWKcOrM4vfAwL51ZK_vY8UinEjQb7-ykqT5MlPHQ/https/devspace.cloud/img/blog/2019-11-07-release-v4.2.0-localhost-ui-kubernetes-development/devspace-localhost-ui-namespace-inspection.png">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-2.discordapp.net/external/BtjhWKcOrM4vfAwL51ZK_vY8UinEjQb7-ykqT5MlPHQ/https/devspace.cloud/img/blog/2019-11-07-release-v4.2.0-localhost-ui-kubernetes-development/devspace-localhost-ui-namespace-inspection.png" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Nous#2788" style="color: rgb(240,183,179)">Nous</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;929687530331324456&#39;)">
+Similar to skaffold:
+<a href="https://tilt.dev/">https://tilt.dev/</a>
+<a href="https://devspace.sh/">https://devspace.sh/</a>                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/187697230767980545/a_5dee552559b07701b1032ab193dfa0a2.gif?size=40" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="MultiverseJack#0001" data-user-id="187697230767980545" style="color: rgb(6,227,236)">MultiverseJack</span>
+
+
+        <span class="chatlog__timestamp">2022-01-09 16:05</span>
+
+            <div class="chatlog__message " data-message-id="929767951442272277" id="message-929767951442272277" title="Message sent: 2022-01-09 16:05">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">These seems pretty awesome. I&#39;ve only used Skaffold, but with give these a whirl at some point too <img loading="lazy" class="emoji " alt="👀" title="eyes" src="https://twemoji.maxcdn.com/2/svg/1f440.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+</div>
+
+<div class="postamble">
+    <div class="postamble__entry">Exported 82 message(s)</div>
+</div>
+
+</body>
+
+</html>
