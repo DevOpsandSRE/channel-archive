@@ -1,0 +1,4496 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>DevOps, SRE, &amp; Infrastructure - linux-filesystems</title>
+    <meta charset="utf-8">
+    <link rel="icon" 
+      type="image/png" 
+      href="../../favicon.ico">
+    <meta name="viewport" content="width=device-width">
+
+    <style>
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-300.woff);
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-400.woff);
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-500.woff);
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-600.woff);
+            font-weight: 600;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-700.woff);
+            font-weight: 700;
+        }
+
+        body {
+            background-color: #36393e;
+            color: #dcddde;
+            font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+        }
+
+        a {
+            color: #00aff4;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        img {
+            object-fit: contain;
+        }
+
+        .markdown {
+            max-width: 100%;
+            line-height: 1.3;
+            overflow-wrap: break-word;
+        }
+
+        .preserve-whitespace {
+            white-space: pre-wrap;
+        }
+
+        .spoiler-text {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .spoiler-text--hidden {
+            cursor: pointer;
+            background-color: #202225;
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .spoiler-text--hidden:hover {
+            background-color: rgba(32, 34, 37, 0.8);
+        }
+
+        .spoiler-text--hidden::selection {
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .quote {
+            display: flex;
+            margin: 0.05em 0;
+        }
+
+        .quote::before {
+            content: "";
+            margin-right: 0.5em;
+            border: 2px solid #4f545c;
+            border-radius: 3px;
+        }
+
+        .pre {
+            background-color: #2f3136;
+            font-family: "Consolas", "Courier New", Courier, monospace;
+        }
+
+        .pre--multiline {
+            margin-top: 0.25em;
+            padding: 0.5em;
+            border: 2px solid #282b30;
+            border-radius: 5px;
+            color: #b9bbbe;
+        }
+
+        .pre--multiline.hljs {
+            background-color: #2f3136;
+            color: #b9bbbe;
+        }
+
+        .pre--inline {
+            padding: 2px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        .mention {
+            border-radius: 3px;
+            padding: 0 2px;
+            color: #dee0fc;
+            background-color: rgba(88, 101, 242, .3);
+            font-weight: 500;
+        }
+
+        .mention:hover {
+            background-color: #5865f2;
+            color: #ffffff
+        }
+
+        .timestamp {
+            border-radius: 3px;
+            padding: 0 2px;
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .emoji {
+            width: 1.325em;
+            height: 1.325em;
+            margin: 0 0.06em;
+            vertical-align: -0.4em;
+        }
+
+        .emoji--small {
+            width: 1em;
+            height: 1em;
+        }
+
+        .emoji--large {
+            width: 2.8em;
+            height: 2.8em;
+        }
+
+        .preamble {
+            display: grid;
+            margin: 0 0.3em 0.6em 0.3em;
+            max-width: 100%;
+            grid-template-columns: auto 1fr;
+        }
+
+        .preamble__guild-icon-container {
+            grid-column: 1;
+        }
+
+        .preamble__guild-icon {
+            max-width: 88px;
+            max-height: 88px;
+        }
+
+        .preamble__entries-container {
+            grid-column: 2;
+            margin-left: 0.6em;
+        }
+
+        .preamble__entry {
+            font-size: 1.4em;
+            color: #ffffff;
+        }
+
+        .preamble__entry--small {
+            font-size: 1em;
+        }
+
+        .chatlog {
+            max-width: 100%;
+        }
+
+        .chatlog__message-group {
+            display: grid;
+            margin: 0 0.6em;
+            padding: 0.9em 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            grid-template-columns: auto 1fr;
+        }
+
+        .chatlog__reference-symbol {
+            grid-column: 1;
+            margin: 8px 4px 4px 18px;
+            border-left: 2px solid #4f545c;
+            border-top: 2px solid #4f545c;
+            border-radius: 8px 0 0 0;
+        }
+
+        .chatlog__reference {
+            display: flex;
+            grid-column: 2;
+            margin-bottom: 0.25em;
+            font-size: 0.875em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            align-items: center;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-avatar {
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            margin-right: 0.25em;
+        }
+
+        .chatlog__reference-name {
+            margin-right: 0.3em;
+            font-weight: 600;
+        }
+
+        .chatlog__reference-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__reference-content a:hover {
+            text-decoration: none;
+        }
+
+        .chatlog__reference-link {
+            cursor: pointer;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-link * {
+            display: inline;
+            pointer-events: none;
+        }
+
+        .chatlog__reference-link:hover {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-link:hover *:not(.spoiler-text) {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-edited-timestamp {
+            margin-left: 0.25em;
+            font-size: 0.8em;
+            unicode-bidi: bidi-override;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__author-avatar-container {
+            grid-column: 1;
+            width: 40px;
+            height: 40px;
+            margin-right: 16px;
+        }
+
+        .chatlog__author-avatar {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+
+        .chatlog__messages {
+            grid-column: 2;
+            min-width: 50%;
+            direction: ltr;
+        }
+
+        .chatlog__author-name {
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .chatlog__timestamp {
+            margin-left: 0.3em;
+            font-size: 0.75em;
+            direction: ltr;
+            unicode-bidi: bidi-override;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__message {
+            padding: 0.1em 0.3em;
+            margin: 0 -0.3em;
+            background-color: transparent;
+            transition: background-color 1s ease;
+        }
+
+        .chatlog__message--highlighted {
+            background-color: rgba(114, 137, 218, 0.2);
+        }
+
+        .chatlog__message--pinned {
+            background-color: rgba(249, 168, 37, 0.05);
+        }
+
+        .chatlog__content {
+            font-size: 0.95em;
+            word-wrap: break-word;
+        }
+
+        .chatlog__edited-timestamp {
+            margin-left: 0.15em;
+            font-size: 0.8em;
+        }
+
+        .chatlog__attachment {
+            display: inline-block;
+            position: relative;
+            margin-top: 0.3em;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden {
+            cursor: pointer;
+            box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .chatlog__attachment--hidden * {
+            pointer-events: none;
+        }
+
+        .chatlog__attachment-spoiler-caption {
+            display: none;
+            z-index: 999;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 0.4em 0.8em;
+            background-color: rgba(0, 0, 0, 0.9);
+            border-radius: 20px;
+            color: #dcddde;
+            font-size: 0.9em;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-spoiler-caption {
+            display: block;
+        }
+
+        .chatlog__attachment--hidden:hover .chatlog__attachment-spoiler-caption {
+            color: #fff;
+        }
+
+        .chatlog__attachment-media {
+            vertical-align: top;
+            max-width: 45vw;
+            max-height: 500px;
+            border-radius: 3px;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-media {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic {
+            width: 100%;
+            max-width: 520px;
+            height: 40px;
+            padding: 10px;
+            background-color: #2f3136;
+            border: 1px solid #292b2f;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-generic {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic-icon {
+            float: left;
+            width: 30px;
+            height: 100%;
+            margin-right: 10px;
+        }
+
+        .chatlog__attachment-generic-size {
+            color: #72767d;
+            font-size: 12px;
+        }
+
+        .chatlog__attachment-generic-name {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__edited-timestamp {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__embed {
+            display: flex;
+            margin-top: 0.3em;
+            max-width: 520px;
+        }
+
+        .chatlog__embed-color-pill {
+            flex-shrink: 0;
+            width: 0.25em;
+            border-top-left-radius: 3px;
+            border-bottom-left-radius: 3px;
+        }
+
+        .chatlog__embed-color-pill--default {
+            background-color: #202225;
+        }
+
+        .chatlog__embed-content-container {
+            display: flex;
+            flex-direction: column;
+            padding: 0.5em 0.6em;
+            background-color: rgba(46, 48, 54, 0.3);
+            border: 1px solid rgba(46, 48, 54, 0.6);
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        .chatlog__embed-content {
+            display: flex;
+            width: 100%;
+        }
+
+        .chatlog__embed-text {
+            flex: 1;
+        }
+
+        .chatlog__embed-author {
+            display: flex;
+            margin-bottom: 0.3em;
+            align-items: center;
+        }
+
+        .chatlog__embed-author-icon {
+            margin-right: 0.5em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .chatlog__embed-author-name {
+            font-size: 0.875em;
+            font-weight: 600;
+            direction: ltr;
+            unicode-bidi: bidi-override;
+            color: #ffffff
+        }
+
+        .chatlog__embed-author-name-link {
+            color: #ffffff;
+        }
+
+        .chatlog__embed-title {
+            margin-bottom: 0.2em;
+            font-size: 0.875em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-description {
+            font-weight: 500;
+            font-size: 0.85em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0 0.5em;
+        }
+
+        .chatlog__embed-field {
+            flex: 0;
+            min-width: 100%;
+            max-width: 506px;
+            padding-top: 0.6em;
+            font-size: 0.875em;
+        }
+
+        .chatlog__embed-field--inline {
+            flex: 1;
+            flex-basis: auto;
+            min-width: 150px;
+        }
+
+        .chatlog__embed-field-name {
+            margin-bottom: 0.2em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-field-value {
+            font-weight: 500;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-thumbnail {
+            flex: 0;
+            margin-left: 1.2em;
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-image-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-image {
+            max-width: 500px;
+            max-height: 400px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-footer {
+            margin-top: 0.6em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-footer-icon {
+            margin-right: 0.2em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+
+        .chatlog__embed-footer-text {
+            vertical-align: middle;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        .chatlog__embed-plainimage {
+            vertical-align: top;
+            max-width: 45vw;
+            max-height: 500px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-spotify {
+            border: 0;
+        }
+
+        .chatlog__embed-youtube-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-youtube {
+            border: 0;
+            border-radius: 3px;
+        }
+
+        .chatlog__reactions {
+            display: flex;
+        }
+
+        .chatlog__reaction {
+            display: flex;
+            align-items: center;
+            margin: 0.35em 0.1em 0.1em 0;
+            padding: .125rem .375rem;
+            background-color: #2f3136;
+            border-radius: 8px;
+            border-color: transparent;
+            border-width: 1px;
+            border-style: solid;
+        }
+
+        .chatlog__reaction:hover {
+            border-color: hsla(0,0%,100%,.2);
+            border-width: 1px;
+            border-style: solid;
+            background-color: transparent;
+        }
+
+        .chatlog__reaction-count {
+            min-width: 9px;
+            margin-left: 0.35em;
+            font-size: 0.875em;
+            color: #b9bbbe;
+        }
+
+        .chatlog__reaction:hover .chatlog__reaction-count {
+            color: #dcddde;
+        }
+
+        .chatlog__bot-tag {
+            position: relative;
+            top: -.1em;
+            margin-left: 0.3em;
+            padding: 0.05em 0.3em;
+            border-radius: 3px;
+            line-height: 1.3;
+            background-color: #5865F2;
+            color: #ffffff;
+            font-size: 0.625em;
+            font-weight: 500;
+        }
+
+        .postamble {
+            margin: 1.4em 0.3em 0.6em 0.3em;
+            padding: 1em;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .postamble__entry {
+            color: #ffffff;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/solarized-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.pre--multiline').forEach(block => hljs.highlightBlock(block));
+        });
+    </script>
+
+    <script>
+        function scrollToMessage(event, id) {
+            var element = document.getElementById('message-' + id);
+
+            if (element) {
+                event.preventDefault();
+
+                element.classList.add('chatlog__message--highlighted');
+
+                window.scrollTo({
+                    top: element.getBoundingClientRect().top - document.body.getBoundingClientRect().top - (window.innerHeight / 2),
+                    behavior: 'smooth'
+                });
+
+                window.setTimeout(function() {
+                    element.classList.remove('chatlog__message--highlighted');
+                }, 2000);
+            }
+        }
+
+        function showSpoiler(event, element) {
+            if (element && element.classList.contains('spoiler-text--hidden')) {
+                event.preventDefault();
+                element.classList.remove('spoiler-text--hidden');
+            }
+            if (element && element.classList.contains('chatlog__attachment--hidden')) {
+                event.preventDefault();
+                element.classList.remove('chatlog__attachment--hidden');
+            }
+        }
+    </script>
+
+    <svg style="display: none">
+        <symbol id="icon-attachment" viewBox="0 0 720 960">
+            <path fill="#f4f5fb" d="M50,935a25,25,0,0,1-25-25V50A25,25,0,0,1,50,25H519.6L695,201.32V910a25,25,0,0,1-25,25Z" />
+            <path fill="#7789c4" d="M509.21,50,670,211.63V910H50V50H509.21M530,0H50A50,50,0,0,0,0,50V910a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50h0V191Z" />
+            <path fill="#f4f5fb" d="M530,215a25,25,0,0,1-25-25V50a25,25,0,0,1,16.23-23.41L693.41,198.77A25,25,0,0,1,670,215Z" />
+            <path fill="#7789c4" d="M530,70.71,649.29,190H530V70.71M530,0a50,50,0,0,0-50,50V190a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50Z" />
+        </symbol>
+    </svg>
+</head>
+<body>
+
+<div class="preamble">
+    <div class="preamble__guild-icon-container">
+        <img class="preamble__guild-icon" src="https://cdn.discordapp.com/icons/419745677585940482/a_36f1bfe78afb2a86f04ecdaeeeedeccd.png" alt="Guild icon" loading="lazy">
+    </div>
+    <div class="preamble__entries-container">
+        <div class="preamble__entry">DevOps, SRE, &amp; Infrastructure</div>
+        <div class="preamble__entry">#linux-filesystems</div>
+
+
+    </div>
+</div>
+
+<div class="chatlog">
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2022-03-14 23:04</span>
+
+            <div class="chatlog__message " data-message-id="953066098838868059" id="message-953066098838868059" title="Message sent: 2022-03-14 23:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">This week&#39;s topic is Linux filesystems! Many of the widely used ones are ext4, btrfs, ZFS, xfs, and others. Let&#39;s talk about what each of them are, best use-cases, and the pros and cons for each.</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-14 23:04">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262757856678248448/3af290db1cacb214fd7ed958492f02ba.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mscs#6558" data-user-id="262757856678248448" style="">mscs</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 01:11</span>
+
+            <div class="chatlog__message " data-message-id="953098080994091059" id="message-953098080994091059" title="Message sent: 2022-03-15 01:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I keep seeing xfs becoming the default in places, over ext4, and I still don&#39;t really know why the change is happening</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 01:19</span>
+
+            <div class="chatlog__message " data-message-id="953100155819798570" id="message-953100155819798570" title="Message sent: 2022-03-15 01:19">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">xfs has the capability to create a single filesystem spanning 512 petabyte drives. It is fast and deletes files very fast.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/391728494058405890/c98aea1ecb40ee53288057ca6e7758ac.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Beef Broccoli#5067" data-user-id="391728494058405890" style="color: rgb(255,203,70)">Beef Broccoli</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 05:59</span>
+
+            <div class="chatlog__message " data-message-id="953170563680059432" id="message-953170563680059432" title="Message sent: 2022-03-15 05:59">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">ext4 is still a great default. it&#39;s average at about everything and stable as a rock.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/652221053346512909/5f5da5512b8e96fb38c43b7be3e0787e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="afro_coder#6436" data-user-id="652221053346512909" style="">afro_coder(he/him)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 06:40</span>
+
+            <div class="chatlog__message " data-message-id="953180987498569728" id="message-953180987498569728" title="Message sent: 2022-03-15 06:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">My go to is xfs, but for now everything is on ext4 :/ except stuff in the cloud</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/f243c22bf6fd4db16a5b4e78985e0b4c.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="color: rgb(255,203,70)">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 08:13</span>
+
+            <div class="chatlog__message " data-message-id="953204187829788693" id="message-953204187829788693" title="Message sent: 2022-03-15 08:13">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I like enabling default encryption from Ubuntu/Kubuntu installation to my filesystems of Dev Machines</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-15 08:14">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="953204209971511336" id="message-953204209971511336" title="Message sent: 2022-03-15 08:13">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It feels secure.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="953204282319077386" id="message-953204282319077386" title="Message sent: 2022-03-15 08:13">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">If someone will try to steal my hard/solid drives, they will get potato</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/273687438751301633/6988617a494c0cd3affb8926ae326ed3.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Marcus H#9589" data-user-id="273687438751301633" style="color: rgb(254,95,85)">Marcus H</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 08:50</span>
+
+            <div class="chatlog__message " data-message-id="953213495170703400" id="message-953213495170703400" title="Message sent: 2022-03-15 08:50">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">so everytime you boot it asks for your hdd decrypt password?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/273687438751301633/6988617a494c0cd3affb8926ae326ed3.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Marcus H#9589" style="color: rgb(254,95,85)">Marcus H</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;953213495170703400&#39;)">
+so everytime you boot it asks for your hdd decrypt password?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/370435997974134785/f243c22bf6fd4db16a5b4e78985e0b4c.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Darkwind#7896" data-user-id="370435997974134785" style="color: rgb(255,203,70)">Darkwind</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 09:26</span>
+
+            <div class="chatlog__message " data-message-id="953222646483533844" id="message-953222646483533844" title="Message sent: 2022-03-15 09:26">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">yes</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="953222823390888007" id="message-953222823390888007" title="Message sent: 2022-03-15 09:27">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">except when waking up from sleeping</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/678627759617998865/6b73a0d0271b68e7293f6104e72fb85b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Aankhen#6432" data-user-id="678627759617998865" style="color: rgb(254,95,85)">Aankhen</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 09:31</span>
+
+            <div class="chatlog__message " data-message-id="953223961909547018" id="message-953223961909547018" title="Message sent: 2022-03-15 09:31">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Then it just asks for coffee?</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="coffee">
+                                <img class="emoji emoji--small" alt="☕" src="https://twemoji.maxcdn.com/2/svg/2615.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">5</span>
+                            </div>
+                            <div class="chatlog__reaction" title="clapcat">
+                                <img class="emoji emoji--small" alt="clapcat" src="https://cdn.discordapp.com/emojis/860621695823380481.gif" loading="lazy">
+                                <span class="chatlog__reaction-count">2</span>
+                            </div>
+                            <div class="chatlog__reaction" title="HAHAA">
+                                <img class="emoji emoji--small" alt="HAHAA" src="https://cdn.discordapp.com/emojis/603607141332287498.png" loading="lazy">
+                                <span class="chatlog__reaction-count">3</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="spanagiot#6305" data-user-id="194077239925669889" style="">spanagiot</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 09:41</span>
+
+            <div class="chatlog__message " data-message-id="953226445268877342" id="message-953226445268877342" title="Message sent: 2022-03-15 09:41">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I recently started experimenting with ZFS and I find its features very nice. It supports RAID, encryption and compression built in (also deduplication but it consumes a lot of RAM and it&#39;s not useful in most cases), but the most useful for me is its scrubbing feature. So far, I&#39;m using ZFS in disks that store my data (not my /) or for my backup disk.There, I need really to know if my disk is failing or not before I need to actually restore from it and come across unreadable or corrupted data</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-15 09:41">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/212018474124312577/a_8017f2227338b14ac5b15545e7925120.gif?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Kinagi#8388" data-user-id="212018474124312577" style="">Kinagi</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 10:35</span>
+
+            <div class="chatlog__message " data-message-id="953239908405874700" id="message-953239908405874700" title="Message sent: 2022-03-15 10:35">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I have been doing some experimenting lately with Ceph, iSCSI, and RAID configurations <img loading="lazy" class="emoji " alt="👀" title="eyes" src="https://twemoji.maxcdn.com/2/svg/1f440.svg"> - its so much fun when you have like 60TB of NVME storage to fiddle with</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-15 10:35">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="drooling_face">
+                                <img class="emoji emoji--small" alt="&#129316;" src="https://twemoji.maxcdn.com/2/svg/1f924.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">2</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/275110971255685120/0215f8b15b75469bb2a1dd40b8f071e5.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Quozlet#3344" data-user-id="275110971255685120" style="color: rgb(255,203,70)">Quozlet</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 13:18</span>
+
+            <div class="chatlog__message " data-message-id="953281092482400276" id="message-953281092482400276" title="Message sent: 2022-03-15 13:18">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://www.phoronix.com/scan.php?page=news_item&px=Linux-5.14-File-Systems">https://www.phoronix.com/scan.php?page=news_item&amp;px=Linux-5.14-File-Systems</a></span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://www.phoronix.com/scan.php?page=news_item&amp;px=Linux-5.14-File-Systems">
+                                                        <div class="markdown preserve-whitespace">Linux 5.14 SSD Benchmarks With Btrfs vs. EXT4 vs. F2FS vs. XFS</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">A number of Phoronix readers have been asking about some fresh file-system comparisons on recent kernels</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/BbPar71_WaFozb3N2-gqSms72a5Vj3bgiivpPvCgCc4/https/www.phoronix.com/assets/categories/linuxstorage.jpg">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/BbPar71_WaFozb3N2-gqSms72a5Vj3bgiivpPvCgCc4/https/www.phoronix.com/assets/categories/linuxstorage.jpg" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="spanagiot#6305" style="">spanagiot</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;953226445268877342&#39;)">
+I recently started experimenting with ZFS and I find its features very nice. It supports RAID, encryption and compression built in (also deduplication but it consumes a lot of RAM and it&#39;s not useful in most cases), but the most useful for me is its scrubbing feature. So far, I&#39;m using ZFS in disks that store my data (not my /) or for my backup disk.There, I need really to know if my disk is failing or not before I need to actually restore from it and come across unreadable or corrupted data                    </span>
+
+                        <span class="chatlog__reference-edited-timestamp" title="2022-03-15 09:41">(edited)</span>
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/792555644417736704/d5609cf1bb8648121675c7a391955777.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="CocaColaSpokesbear#3580" data-user-id="792555644417736704" style="">CocaColaSpokesbear</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 18:01</span>
+
+            <div class="chatlog__message " data-message-id="953352202234249256" id="message-953352202234249256" title="Message sent: 2022-03-15 18:01">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Isn&#39;t zfs also the name of a shell? Any relation to the file system of the same acronym?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/792555644417736704/d5609cf1bb8648121675c7a391955777.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="CocaColaSpokesbear#3580" style="">CocaColaSpokesbear</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;953352202234249256&#39;)">
+Isn&#39;t zfs also the name of a shell? Any relation to the file system of the same acronym?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="spanagiot#6305" data-user-id="194077239925669889" style="">spanagiot</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 18:09</span>
+
+            <div class="chatlog__message " data-message-id="953354246483509289" id="message-953354246483509289" title="Message sent: 2022-03-15 18:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">The shell is called zsh (from <strong>Z</strong> <strong>Sh</strong>ell). The file system is called ZFS (from <strong>Z</strong>ettabyte <strong>F</strong>ile <strong>S</strong>ystem) <img loading="lazy" class="emoji " alt="😄" title="smile" src="https://twemoji.maxcdn.com/2/svg/1f604.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/792555644417736704/d5609cf1bb8648121675c7a391955777.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="CocaColaSpokesbear#3580" data-user-id="792555644417736704" style="">CocaColaSpokesbear</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 18:10</span>
+
+            <div class="chatlog__message " data-message-id="953354588541554719" id="message-953354588541554719" title="Message sent: 2022-03-15 18:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">That helps, thanks.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;953100155819798570&#39;)">
+xfs has the capability to create a single filesystem spanning 512 petabyte drives. It is fast and deletes files very fast.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262757856678248448/3af290db1cacb214fd7ed958492f02ba.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mscs#6558" data-user-id="262757856678248448" style="">mscs</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 21:46</span>
+
+            <div class="chatlog__message " data-message-id="953408772024455168" id="message-953408772024455168" title="Message sent: 2022-03-15 21:46">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">yeah, but why is it the default on stuff that&#39;s tiny?  Like, what&#39;s the side by side for the median linux box?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/262757856678248448/3af290db1cacb214fd7ed958492f02ba.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="mscs#6558" style="">mscs</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;953408772024455168&#39;)">
+yeah, but why is it the default on stuff that&#39;s tiny?  Like, what&#39;s the side by side for the median linux box?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262757856678248448/3af290db1cacb214fd7ed958492f02ba.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mscs#6558" data-user-id="262757856678248448" style="">mscs</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 21:47</span>
+
+            <div class="chatlog__message " data-message-id="953409105060585572" id="message-953409105060585572" title="Message sent: 2022-03-15 21:47">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I mean, lies, damn lies, and benchmarks, but.... <a href="https://www.phoronix.com/scan.php?page=news_item&px=Linux-5.14-File-Systems">https://www.phoronix.com/scan.php?page=news_item&amp;px=Linux-5.14-File-Systems</a></span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://www.phoronix.com/scan.php?page=news_item&amp;px=Linux-5.14-File-Systems">
+                                                        <div class="markdown preserve-whitespace">Linux 5.14 SSD Benchmarks With Btrfs vs. EXT4 vs. F2FS vs. XFS</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">A number of Phoronix readers have been asking about some fresh file-system comparisons on recent kernels</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/BbPar71_WaFozb3N2-gqSms72a5Vj3bgiivpPvCgCc4/https/www.phoronix.com/assets/categories/linuxstorage.jpg">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/BbPar71_WaFozb3N2-gqSms72a5Vj3bgiivpPvCgCc4/https/www.phoronix.com/assets/categories/linuxstorage.jpg" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/262757856678248448/3af290db1cacb214fd7ed958492f02ba.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="mscs#6558" style="">mscs</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;953408772024455168&#39;)">
+yeah, but why is it the default on stuff that&#39;s tiny?  Like, what&#39;s the side by side for the median linux box?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 21:55</span>
+
+            <div class="chatlog__message " data-message-id="953411258948931584" id="message-953411258948931584" title="Message sent: 2022-03-15 21:55">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I really can&#39;t answer why it is the default on some distros an not on others.  I like XFS so if I have the option, I take it.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;953411258948931584&#39;)">
+I really can&#39;t answer why it is the default on some distros an not on others.  I like XFS so if I have the option, I take it.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262757856678248448/3af290db1cacb214fd7ed958492f02ba.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mscs#6558" data-user-id="262757856678248448" style="">mscs</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 22:07</span>
+
+            <div class="chatlog__message " data-message-id="953414180323594311" id="message-953414180323594311" title="Message sent: 2022-03-15 22:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">File systems in general are fascinating.</span>
+
+                        </div>
+                    </div>
+
+                    <div class="chatlog__attachment " onclick="">
+
+                            <a href="https://cdn.discordapp.com/attachments/953065765379141632/953414179488923698/iu.jpeg">
+                                <img class="chatlog__attachment-media" src="https://cdn.discordapp.com/attachments/953065765379141632/953414179488923698/iu.jpeg" alt="Image attachment" title="Image: iu.jpeg (30.69 KB)" loading="lazy">
+                            </a>
+                    </div>
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/262757856678248448/3af290db1cacb214fd7ed958492f02ba.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="mscs#6558" style="">mscs</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;953414180323594311&#39;)">
+File systems in general are fascinating.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262757856678248448/3af290db1cacb214fd7ed958492f02ba.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mscs#6558" data-user-id="262757856678248448" style="">mscs</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 22:08</span>
+
+            <div class="chatlog__message " data-message-id="953414469709619290" id="message-953414469709619290" title="Message sent: 2022-03-15 22:08">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I&#39;ve been working with HDFS a bunch, sort of filesystem inception.  I wonder if XFS could effectively replace it....</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 22:10</span>
+
+            <div class="chatlog__message " data-message-id="953415036926328913" id="message-953415036926328913" title="Message sent: 2022-03-15 22:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">XFS does have some draw backs. If you need to delete LOTS of small files, it won&#39;t do that very well. XFS was designed to be very fast with large files - originally used on supercomputers.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="953415476543913984" id="message-953415476543913984" title="Message sent: 2022-03-15 22:12">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Growing the file system is really easy (assuming it isn&#39;t the root drive).  It does journaling. We use it with our clients - granted most of them use databases, so XFS helps.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262757856678248448/3af290db1cacb214fd7ed958492f02ba.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mscs#6558" data-user-id="262757856678248448" style="">mscs</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 22:32</span>
+
+            <div class="chatlog__message " data-message-id="953420383330107473" id="message-953420383330107473" title="Message sent: 2022-03-15 22:32">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah, but the block size on HDFS is usually measured in MB, as in &quot;64-256MB blocks&quot;</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-15 23:07</span>
+
+            <div class="chatlog__message " data-message-id="953429254266302474" id="message-953429254266302474" title="Message sent: 2022-03-15 23:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">IIRC the block size is selectable within certain limits given the size of the filesystem.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/216651123698696204/851ff3e31924e7c2d03efefaf323e42e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="bees#3810" data-user-id="216651123698696204" style="color: rgb(240,183,179)">bees</span>
+
+
+        <span class="chatlog__timestamp">2022-03-16 01:26</span>
+
+            <div class="chatlog__message " data-message-id="953464149491449886" id="message-953464149491449886" title="Message sent: 2022-03-16 01:26">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">HDFS isn&#39;t <em>really</em> an OS filesystem, and it does require large data block sizes to keep NameNodes from falling over - all of which is configurable on the underlying OS filesystem (which can be XFS or ext4 or what have you)</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/216651123698696204/851ff3e31924e7c2d03efefaf323e42e.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="bees#3810" style="color: rgb(240,183,179)">bees</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;953464149491449886&#39;)">
+HDFS isn&#39;t <em>really</em> an OS filesystem, and it does require large data block sizes to keep NameNodes from falling over - all of which is configurable on the underlying OS filesystem (which can be XFS or ext4 or what have you)                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262757856678248448/3af290db1cacb214fd7ed958492f02ba.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mscs#6558" data-user-id="262757856678248448" style="">mscs</span>
+
+
+        <span class="chatlog__timestamp">2022-03-16 23:12</span>
+
+            <div class="chatlog__message " data-message-id="953792785620828270" id="message-953792785620828270" title="Message sent: 2022-03-16 23:12">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">oh for sure, but if XFS can scale as big as HDFS for most purposes, and can do variable block sizes, why not use it directly?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-03-16 23:14</span>
+
+            <div class="chatlog__message " data-message-id="953793387373416526" id="message-953793387373416526" title="Message sent: 2022-03-16 23:14">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">But HDFS is designed to run on multiple nodes with redundancy for distributed compute systems. XFS is a single node filesystem. They are for completely different usecases.</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="point_up">
+                                <img class="emoji emoji--small" alt="☝️" src="https://twemoji.maxcdn.com/2/svg/261d.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/262757856678248448/3af290db1cacb214fd7ed958492f02ba.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mscs#6558" data-user-id="262757856678248448" style="">mscs</span>
+
+
+        <span class="chatlog__timestamp">2022-03-16 23:23</span>
+
+            <div class="chatlog__message " data-message-id="953795719125405746" id="message-953795719125405746" title="Message sent: 2022-03-16 23:23">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">it is, but that&#39;s because the original model for hadoop usage was &quot;buy cheap systems with storage, compute, and ram all together&quot;.  But as it turns out, that means your compute and ram sit idle most of the time for a bunch of use cases, so now it has become simply &quot;fast source of data to feed to smaller-than-cluster-scale jobs&quot;</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 13:40</span>
+
+            <div class="chatlog__message " data-message-id="954011264668008488" id="message-954011264668008488" title="Message sent: 2022-03-17 13:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">So, between XFS and EXT4, it comes down to use case?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 14:57</span>
+
+            <div class="chatlog__message " data-message-id="954030691560079360" id="message-954030691560079360" title="Message sent: 2022-03-17 14:57">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yes and no. Both work fine for general purpose. However, both have strengths and weaknesses for specific use-cases.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954030691560079360&#39;)">
+Yes and no. Both work fine for general purpose. However, both have strengths and weaknesses for specific use-cases.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 15:44</span>
+
+            <div class="chatlog__message " data-message-id="954042599986069594" id="message-954042599986069594" title="Message sent: 2022-03-17 15:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Ugh, technology. Always making it hard to make a good choice</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="point_up_2">
+                                <img class="emoji emoji--small" alt="&#128070;" src="https://twemoji.maxcdn.com/2/svg/1f446.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 15:48</span>
+
+            <div class="chatlog__message " data-message-id="954043538604163134" id="message-954043538604163134" title="Message sent: 2022-03-17 15:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Personally, I use XFS when I can.  I generally don&#39;t delete a lot of little files (slow on XFS) on a regular basis.  It is easy to grow the file system (not the root drive) if you need too.  Also, I almost never put my home drive on the OS drive. That way, if the OS drive dies, or I have a bad upgrade, I won&#39;t lose my home dir stuff if I need to reinstall.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954043538604163134&#39;)">
+Personally, I use XFS when I can.  I generally don&#39;t delete a lot of little files (slow on XFS) on a regular basis.  It is easy to grow the file system (not the root drive) if you need too.  Also, I almost never put my home drive on the OS drive. That way, if the OS drive dies, or I have a bad upgrade, I won&#39;t lose my home dir stuff if I need to reinstall.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 16:20</span>
+
+            <div class="chatlog__message " data-message-id="954051487674281985" id="message-954051487674281985" title="Message sent: 2022-03-17 16:20">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I generally store anything in the home folder on its own drive, such as <span class="pre pre--inline">/mnt/hq</span></span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-17 16:20">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954043538604163134&#39;)">
+Personally, I use XFS when I can.  I generally don&#39;t delete a lot of little files (slow on XFS) on a regular basis.  It is easy to grow the file system (not the root drive) if you need too.  Also, I almost never put my home drive on the OS drive. That way, if the OS drive dies, or I have a bad upgrade, I won&#39;t lose my home dir stuff if I need to reinstall.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 17:09</span>
+
+            <div class="chatlog__message " data-message-id="954064051665768450" id="message-954064051665768450" title="Message sent: 2022-03-17 17:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Are there FS that don&#39;t have online expand?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 17:53</span>
+
+            <div class="chatlog__message " data-message-id="954075097948368927" id="message-954075097948368927" title="Message sent: 2022-03-17 17:53">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I haven&#39;t used anything other than ext2/3 and XFS. At the time ext2/3 existed IIRC, you couldn&#39;t grow them without fixing the partition table and what not. That may have changed.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954075097948368927&#39;)">
+I haven&#39;t used anything other than ext2/3 and XFS. At the time ext2/3 existed IIRC, you couldn&#39;t grow them without fixing the partition table and what not. That may have changed.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:03</span>
+
+            <div class="chatlog__message " data-message-id="954077603369746482" id="message-954077603369746482" title="Message sent: 2022-03-17 18:03">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">You still can&#39;t grow a filesystem w/o growing the underlying device.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:10</span>
+
+            <div class="chatlog__message " data-message-id="954079320802988062" id="message-954079320802988062" title="Message sent: 2022-03-17 18:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">True, but it was much more complicated years ago.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954079320802988062&#39;)">
+True, but it was much more complicated years ago.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:13</span>
+
+            <div class="chatlog__message " data-message-id="954080104991047781" id="message-954080104991047781" title="Message sent: 2022-03-17 18:13">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Mostly because of LVM, but if you install something on a disk with partitions, it&#39;s still as hard</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:14</span>
+
+            <div class="chatlog__message " data-message-id="954080183906869258" id="message-954080183906869258" title="Message sent: 2022-03-17 18:14">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Personally I am really looking forward to when bcachefs gets upstreamed. Been waiting a few years for that though <img loading="lazy" class="emoji " alt="😭" title="sob" src="https://twemoji.maxcdn.com/2/svg/1f62d.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954075097948368927&#39;)">
+I haven&#39;t used anything other than ext2/3 and XFS. At the time ext2/3 existed IIRC, you couldn&#39;t grow them without fixing the partition table and what not. That may have changed.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:17</span>
+
+            <div class="chatlog__message " data-message-id="954080959010046012" id="message-954080959010046012" title="Message sent: 2022-03-17 18:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">You have to change the partition table for all filesystems (or at least the underlying device if it is not a raw partition). That has always been the case. Not sure if anything have really changed in that area in the last few years. Filesystem tooling generally does not touch the underlying layers and bigger tools like gparted have been able to resize both the partition and filesystem togeather (or really one after the other) for a long time now.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954081485957263360" id="message-954081485957263360" title="Message sent: 2022-03-17 18:19">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Never really used xfs, though I would be supprised if its tooling was also touching the partition table when you resized it.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:29</span>
+
+            <div class="chatlog__message " data-message-id="954084101072224276" id="message-954084101072224276" title="Message sent: 2022-03-17 18:29">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">My info may be outdated. I haven&#39;t had to grow a filesystem on a home system in a long time. The only time I increase a filesystem is on AWS.  We just change the size, go on the specific instance and type xfs.growfs and we are done.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954084381700530229" id="message-954084381700530229" title="Message sent: 2022-03-17 18:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">IIRC, back in the day - mid 90s, this was a much more complicated process. I could be remembering wrong.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954084101072224276&#39;)">
+My info may be outdated. I haven&#39;t had to grow a filesystem on a home system in a long time. The only time I increase a filesystem is on AWS.  We just change the size, go on the specific instance and type xfs.growfs and we are done.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:34</span>
+
+            <div class="chatlog__message " data-message-id="954085254266769418" id="message-954085254266769418" title="Message sent: 2022-03-17 18:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">AWS does a lot of non-typical stuff. I dont think you are really working with partition  tables at all when you use AWS disks.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Nous#2788" style="color: rgb(240,183,179)">Nous</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954085254266769418&#39;)">
+AWS does a lot of non-typical stuff. I dont think you are really working with partition  tables at all when you use AWS disks.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:35</span>
+
+            <div class="chatlog__message " data-message-id="954085638238531614" id="message-954085638238531614" title="Message sent: 2022-03-17 18:35">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">yeah, I am sure you are right.  My boss used to use LVM to make growing filesystems much easier (ext4 I think) until I showed him how to do it on XFS in AWS. He never touched LVM again.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954086433918943252" id="message-954086433918943252" title="Message sent: 2022-03-17 18:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Of course, my boss is in his 50s and remembers using 300 baud modems and teletypes</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:39</span>
+
+            <div class="chatlog__message " data-message-id="954086497689165874" id="message-954086497689165874" title="Message sent: 2022-03-17 18:39">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">While we&#39;re on the topic of file systems, to swap or not to swap?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:40</span>
+
+            <div class="chatlog__message " data-message-id="954086719488131142" id="message-954086719488131142" title="Message sent: 2022-03-17 18:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">use swap</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954086745216000052" id="message-954086745216000052" title="Message sent: 2022-03-17 18:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Always use swap.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:40</span>
+
+            <div class="chatlog__message " data-message-id="954086770922905671" id="message-954086770922905671" title="Message sent: 2022-03-17 18:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">How to choose how much to use?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:40</span>
+
+            <div class="chatlog__message " data-message-id="954086848970494062" id="message-954086848970494062" title="Message sent: 2022-03-17 18:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://chrisdown.name/2018/01/02/in-defence-of-swap.html">https://chrisdown.name/2018/01/02/in-defence-of-swap.html</a> is worth a read.</span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://chrisdown.name/2018/01/02/in-defence-of-swap.html">
+                                                        <div class="markdown preserve-whitespace">In defence of swap: common misconceptions</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">tl;dr: Having swap is a reasonably important part of a well functioning system. Without it, sane memory management becomes harder to achieve.</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-2.discordapp.net/external/p-ojWKQU1wVMoNKNTbbdFs-ZMEHyxVXy0exD7SLP398/https/chrisdown.name/images/hnr.jpg">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-2.discordapp.net/external/p-ojWKQU1wVMoNKNTbbdFs-ZMEHyxVXy0exD7SLP398/https/chrisdown.name/images/hnr.jpg" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:40</span>
+
+            <div class="chatlog__message " data-message-id="954086892926808064" id="message-954086892926808064" title="Message sent: 2022-03-17 18:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Depends upon your memory footprint and your expected load.  If you have plenty of memory, you can turn it off.  Turn on swap can lead to performance issues.  We always turn it off because if there is something that is chewing memory, we want to know about it and don&#39;t want the performance hit of it going to swap</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:41</span>
+
+            <div class="chatlog__message " data-message-id="954086974619263046" id="message-954086974619263046" title="Message sent: 2022-03-17 18:41">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">How much to use is much harder to answer though. It really depends on your usecase./</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954087209986842685" id="message-954087209986842685" title="Message sent: 2022-03-17 18:41">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><div class="quote">Turn on swap can lead to performance issues
+</div>This is not true - too much swap can cause issues but have some swap should not be a problem. Turning it off completely can cause more issues than having a little bit.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954087477625385000" id="message-954087477625385000" title="Message sent: 2022-03-17 18:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Generally speaking, 1-2G of swap should be enough for most people and not cause any big issues.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:43</span>
+
+            <div class="chatlog__message " data-message-id="954087484520812614" id="message-954087484520812614" title="Message sent: 2022-03-17 18:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">We have never had issues with swap off.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954087484520812614&#39;)">
+We have never had issues with swap off.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:43</span>
+
+            <div class="chatlog__message " data-message-id="954087595858616360" id="message-954087595858616360" title="Message sent: 2022-03-17 18:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">You probably would not have any with swap on either than.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954088229617942558" id="message-954088229617942558" title="Message sent: 2022-03-17 18:46">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">But unless you have massively too much ram having some swap can add a small performance improvement in general use. All you do by removing swap is force the kernel to dump the filesystem cache. You stop it from being able to chose unused or lesser used pages of memory instead - which reduces the amount of fileysstem cache you can use. So any heavy file IO application will struggle a little bit more.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:48</span>
+
+            <div class="chatlog__message " data-message-id="954088895472095272" id="message-954088895472095272" title="Message sent: 2022-03-17 18:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">As my boss dictates how the systems are configured, I can only tell you what I have seen with our systems.  I posted the above article for him to read.  I remember when the rule of thumb for a home system was 1.5 times the memory for a swap size.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:51</span>
+
+            <div class="chatlog__message " data-message-id="954089512827510824" id="message-954089512827510824" title="Message sent: 2022-03-17 18:51">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><div class="quote"> I remember when the rule of thumb for a home system was 1.5 times the memory for a swap size.
+</div>That is an old rule when 256MB-2GB RAM was common. These days if you have 32GB then even 32GB of swap can cause issues when you have a program that has a memory leak. Too much ram delays the OOM killer and can cause your system to lock up with thrashing your system. Unless you need to hybernate (at which point your swap needs to be as big as the total amount of memory all your application can ever use).</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954089849445556344" id="message-954089849445556344" title="Message sent: 2022-03-17 18:52">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I would say start with 1-2GB, and if you find you never use all of it then that is enough, if you find you fill it up often then you might want a bit more. If you go for large amounts of swap though you will want to look into the early oom killers to stop runaway processes.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954090060813303808" id="message-954090060813303808" title="Message sent: 2022-03-17 18:53">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Note that not having enough swap can also cause your system to lock up thrashing the fillesystem cache under heavy load.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 18:58</span>
+
+            <div class="chatlog__message " data-message-id="954091459383025715" id="message-954091459383025715" title="Message sent: 2022-03-17 18:58">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Not really about swap, but I was working at a company that did programming on IBM AS/400 and one of the programmers accidently created an infinite loop that wrote to disk. He didn&#39;t realize it until everybody else was seeing significant slow down of their work.  So he went to the console to kill it and the console was taking over 5 minutes to actually respond to each command. So we shut the machine down - hard.  If you have never shut down down hard, it is a terrible process. The AS/400 filesystem is really a relational database with indexes loaded in memory. When you shutdown the system, if there are any indexes not written to disk, they are update on disk. When you shut an AS/400 down hard, you essentially pull the plug (figuratively). When the system comes up, it knows it was shut down hard, and reads the entire filesystem rebuilding those indexes.  If you have lots of file and lots of big file, that can take hours.</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="scream">
+                                <img class="emoji emoji--small" alt="&#128561;" src="https://twemoji.maxcdn.com/2/svg/1f631.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Nous#2788" data-user-id="154376677445730305" style="color: rgb(240,183,179)">Nous</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 19:06</span>
+
+            <div class="chatlog__message " data-message-id="954093271053914133" id="message-954093271053914133" title="Message sent: 2022-03-17 19:06">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Oof</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 19:09</span>
+
+            <div class="chatlog__message " data-message-id="954094153854234624" id="message-954094153854234624" title="Message sent: 2022-03-17 19:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">yep. They sent the rest of the programming staff home. Another time that we got sent home was when the power company accidently cut the wrong power line.  Our UPS was due to be installed  2 hours later.  We got sent home again.</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="person_facepalming">
+                                <img class="emoji emoji--small" alt="&#129318;" src="https://twemoji.maxcdn.com/2/svg/1f926.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+            <div class="chatlog__message " data-message-id="954094349803741194" id="message-954094349803741194" title="Message sent: 2022-03-17 19:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">The power company paid the company for time and productivity lost for that.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954094644214525992" id="message-954094644214525992" title="Message sent: 2022-03-17 19:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">The AS/400 is a beast of a workhorse assuming you have proper power.  It has redundancy built in like I have never seen before</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954094859201966102" id="message-954094859201966102" title="Message sent: 2022-03-17 19:12">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">But, I can&#39;t stand COBOL or RPG - the main languages we programmed in.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/275110971255685120/0215f8b15b75469bb2a1dd40b8f071e5.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Quozlet#3344" data-user-id="275110971255685120" style="color: rgb(255,203,70)">Quozlet</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 21:23</span>
+
+            <div class="chatlog__message " data-message-id="954127799344594994" id="message-954127799344594994" title="Message sent: 2022-03-17 21:23">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><a href="https://github.com/rfjakob/earlyoom">https://github.com/rfjakob/earlyoom</a>
+I’ve found this useful on my workstation machines</span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill" style="background-color: rgba(30,35,39,255)"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://github.com/rfjakob/earlyoom">
+                                                        <div class="markdown preserve-whitespace">GitHub - rfjakob/earlyoom: earlyoom - Early OOM Daemon for Linux</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">earlyoom - Early OOM Daemon for Linux. Contribute to rfjakob/earlyoom development by creating an account on GitHub.</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/2RiY73kRD8DvZd-GNqCJ12IbjN4CNBSj9Gu9CLx518o/https/opengraph.githubassets.com/ef082ce2d4200edda89158c5ac7695da0bae61c562a0879fa8715db5474b0269/rfjakob/earlyoom">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/2RiY73kRD8DvZd-GNqCJ12IbjN4CNBSj9Gu9CLx518o/https/opengraph.githubassets.com/ef082ce2d4200edda89158c5ac7695da0bae61c562a0879fa8715db5474b0269/rfjakob/earlyoom" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/275110971255685120/0215f8b15b75469bb2a1dd40b8f071e5.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Quozlet#3344" style="color: rgb(255,203,70)">Quozlet</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954127799344594994&#39;)">
+<a href="https://github.com/rfjakob/earlyoom">https://github.com/rfjakob/earlyoom</a>
+I’ve found this useful on my workstation machines                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 21:43</span>
+
+            <div class="chatlog__message " data-message-id="954132921772539904" id="message-954132921772539904" title="Message sent: 2022-03-17 21:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I would be interested to know how it works when you have a computationally intensive task.  Will earlyoom slow down the system so it can make an evaluation 10 times a second, or will the computationally intensive task slow earlyoom down.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/391728494058405890/c98aea1ecb40ee53288057ca6e7758ac.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Beef Broccoli#5067" data-user-id="391728494058405890" style="color: rgb(255,203,70)">Beef Broccoli</span>
+
+
+        <span class="chatlog__timestamp">2022-03-17 22:58</span>
+
+            <div class="chatlog__message " data-message-id="954151824196247553" id="message-954151824196247553" title="Message sent: 2022-03-17 22:58">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Dunno about you guys but lvm hurts me brain. I don&#39;t ever want to deal with it again if I have a choice.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/391728494058405890/c98aea1ecb40ee53288057ca6e7758ac.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Beef Broccoli#5067" style="color: rgb(255,203,70)">Beef Broccoli</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954151824196247553&#39;)">
+Dunno about you guys but lvm hurts me brain. I don&#39;t ever want to deal with it again if I have a choice.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 03:38</span>
+
+            <div class="chatlog__message " data-message-id="954222124233531502" id="message-954222124233531502" title="Message sent: 2022-03-18 03:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Are there alternatives to pooling storage outside of ZFS (8 GB RAM req), Ceph/GlusterFS (requires multiple hardware devices), etc.?</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="hm">
+                                <img class="emoji emoji--small" alt="hm" src="https://cdn.discordapp.com/emojis/803016547274719232.png" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/391728494058405890/c98aea1ecb40ee53288057ca6e7758ac.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Beef Broccoli#5067" data-user-id="391728494058405890" style="color: rgb(255,203,70)">Beef Broccoli</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 03:43</span>
+
+            <div class="chatlog__message " data-message-id="954223553786548325" id="message-954223553786548325" title="Message sent: 2022-03-18 03:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I&#39;m probably the wrong person to ask. Maybe someone smarter then me will chime in.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="QuantumRaven#7343" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954222124233531502&#39;)">
+Are there alternatives to pooling storage outside of ZFS (8 GB RAM req), Ceph/GlusterFS (requires multiple hardware devices), etc.?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/212018474124312577/a_8017f2227338b14ac5b15545e7925120.gif?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Kinagi#8388" data-user-id="212018474124312577" style="">Kinagi</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 09:45</span>
+
+            <div class="chatlog__message " data-message-id="954314699359522836" id="message-954314699359522836" title="Message sent: 2022-03-18 09:45">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">If you end up finding anything else, I would love to hear ❤️</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/212018474124312577/a_8017f2227338b14ac5b15545e7925120.gif?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Kinagi#8388" style="">Kinagi</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954314699359522836&#39;)">
+If you end up finding anything else, I would love to hear ❤️                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 10:07</span>
+
+            <div class="chatlog__message " data-message-id="954320131847258112" id="message-954320131847258112" title="Message sent: 2022-03-18 10:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Will do! :)</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 11:44</span>
+
+            <div class="chatlog__message " data-message-id="954344443127930930" id="message-954344443127930930" title="Message sent: 2022-03-18 11:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I did find DRBD, which has apparently been baked into the kernel since 2009 <span class="mention" title="Kinagi#8388">@Kinagi</span> - <a href="https://linbit.com/drbd/">https://linbit.com/drbd/</a></span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill" style="background-color: rgba(110,193,228,255)"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://linbit.com/drbd/">
+                                                        <div class="markdown preserve-whitespace">DRBD &#187; LINBIT</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">Distributed Replicated Storage System DRBD&#174;– software is a distributed replicated storage system for the Linux platform. It is implemented as a kernel driver, several userspace management applications, and some shell scripts.&#160; DRBD is traditionally used in&#160;high availability&#160;(HA)&#160;computer clusters, but beginning with DRBD version 9, it can also b...</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-2.discordapp.net/external/OVcHgkqMqZDfqBaLKaZLnhiYxgTLpWR1NsPO0thrBrw/https/linbit.com/wp-content/uploads/2020/01/default-linbit.jpg">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-2.discordapp.net/external/OVcHgkqMqZDfqBaLKaZLnhiYxgTLpWR1NsPO0thrBrw/https/linbit.com/wp-content/uploads/2020/01/default-linbit.jpg" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="QuantumRaven#7343" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954344443127930930&#39;)">
+I did find DRBD, which has apparently been baked into the kernel since 2009 <span class="mention" title="Kinagi#8388">@Kinagi</span> - <a href="https://linbit.com/drbd/">https://linbit.com/drbd/</a>                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/212018474124312577/a_8017f2227338b14ac5b15545e7925120.gif?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Kinagi#8388" data-user-id="212018474124312577" style="">Kinagi</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 12:17</span>
+
+            <div class="chatlog__message " data-message-id="954352795484569620" id="message-954352795484569620" title="Message sent: 2022-03-18 12:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Interesting... <img loading="lazy" class="emoji " alt="BK_shakyeyes" title="BK_shakyeyes" src="https://cdn.discordapp.com/emojis/891735341441101915.gif"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/212018474124312577/a_8017f2227338b14ac5b15545e7925120.gif?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Kinagi#8388" style="">Kinagi</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954352795484569620&#39;)">
+Interesting... <img loading="lazy" class="emoji " alt="BK_shakyeyes" title="BK_shakyeyes" src="https://cdn.discordapp.com/emojis/891735341441101915.gif">                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 13:12</span>
+
+            <div class="chatlog__message " data-message-id="954366774973964289" id="message-954366774973964289" title="Message sent: 2022-03-18 13:12">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I&#39;ve only looked at it</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="QuantumRaven#7343" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954366774973964289&#39;)">
+I&#39;ve only looked at it                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 13:28</span>
+
+            <div class="chatlog__message " data-message-id="954370635168096266" id="message-954370635168096266" title="Message sent: 2022-03-18 13:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It&#39;s been around for a long while, not sure if it&#39;s widely used.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="QuantumRaven#7343" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954222124233531502&#39;)">
+Are there alternatives to pooling storage outside of ZFS (8 GB RAM req), Ceph/GlusterFS (requires multiple hardware devices), etc.?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 13:28</span>
+
+            <div class="chatlog__message " data-message-id="954370821298749440" id="message-954370821298749440" title="Message sent: 2022-03-18 13:28">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">What do you mean, exactly, by &quot;Pooling storage&quot;?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/391728494058405890/c98aea1ecb40ee53288057ca6e7758ac.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Beef Broccoli#5067" style="color: rgb(255,203,70)">Beef Broccoli</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954151824196247553&#39;)">
+Dunno about you guys but lvm hurts me brain. I don&#39;t ever want to deal with it again if I have a choice.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 13:29</span>
+
+            <div class="chatlog__message " data-message-id="954370964370636871" id="message-954370964370636871" title="Message sent: 2022-03-18 13:29">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I&#39;m really ok with it.  Do you have any specific questions?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="ugobee#2446" style="">ugobee</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954370821298749440&#39;)">
+What do you mean, exactly, by &quot;Pooling storage&quot;?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 13:29</span>
+
+            <div class="chatlog__message " data-message-id="954370986998919198" id="message-954370986998919198" title="Message sent: 2022-03-18 13:29">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Taking multiple physical disks (HDD, SSD, etc.) and pooling their storage into a massive pool, then dividing it as needed</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954371103579582474" id="message-954371103579582474" title="Message sent: 2022-03-18 13:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">That&#39;s literally what LVM does as well as Windows Storage Spaces/Pool</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954371210282684516" id="message-954371210282684516" title="Message sent: 2022-03-18 13:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">You have two 4 TB HDDs, you can combine them into 8 TB in one pool and divide it as needed</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="QuantumRaven#7343" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954370986998919198&#39;)">
+Taking multiple physical disks (HDD, SSD, etc.) and pooling their storage into a massive pool, then dividing it as needed                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 13:31</span>
+
+            <div class="chatlog__message " data-message-id="954371491774988298" id="message-954371491774988298" title="Message sent: 2022-03-18 13:31">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">If you want to use a Linux filesystem, I don&#39;t see why one would not use LVM.  If you use ZFS, well, it does everything.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="ugobee#2446" style="">ugobee</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954371491774988298&#39;)">
+If you want to use a Linux filesystem, I don&#39;t see why one would not use LVM.  If you use ZFS, well, it does everything.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 13:31</span>
+
+            <div class="chatlog__message " data-message-id="954371592278917140" id="message-954371592278917140" title="Message sent: 2022-03-18 13:31">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I had a scare recently with LVM, so I&#39;d rather just... not</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="QuantumRaven#7343" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954371592278917140&#39;)">
+I had a scare recently with LVM, so I&#39;d rather just... not                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 13:32</span>
+
+            <div class="chatlog__message " data-message-id="954371815457845329" id="message-954371815457845329" title="Message sent: 2022-03-18 13:32">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">That&#39;s your decision but if you avoid every product you have an issue once, you&#39;ll run out of options really quick.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="ugobee#2446" style="">ugobee</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954371815457845329&#39;)">
+That&#39;s your decision but if you avoid every product you have an issue once, you&#39;ll run out of options really quick.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 13:45</span>
+
+            <div class="chatlog__message " data-message-id="954375031008395375" id="message-954375031008395375" title="Message sent: 2022-03-18 13:45">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">This is true</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="QuantumRaven#7343" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954375031008395375&#39;)">
+This is true                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 13:51</span>
+
+            <div class="chatlog__message " data-message-id="954376561103097936" id="message-954376561103097936" title="Message sent: 2022-03-18 13:51">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Do you want to share what happened? Do you understand why a problem happened?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="ugobee#2446" style="">ugobee</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954376561103097936&#39;)">
+Do you want to share what happened? Do you understand why a problem happened?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 14:45</span>
+
+            <div class="chatlog__message " data-message-id="954390155467325500" id="message-954390155467325500" title="Message sent: 2022-03-18 14:45">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah. I created <span class="pre pre--inline">/mnt/hq</span>, moved all my stuff there, <em>then</em> mounted the LVM item, which made me think I deleted my data</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="QuantumRaven#7343" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954390155467325500&#39;)">
+Yeah. I created <span class="pre pre--inline">/mnt/hq</span>, moved all my stuff there, <em>then</em> mounted the LVM item, which made me think I deleted my data                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 14:57</span>
+
+            <div class="chatlog__message " data-message-id="954393221256081458" id="message-954393221256081458" title="Message sent: 2022-03-18 14:57">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">That&#39;s not clear to me.  You usually never loose data when you mount something.  You just hide it.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="ugobee#2446" style="">ugobee</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954393221256081458&#39;)">
+That&#39;s not clear to me.  You usually never loose data when you mount something.  You just hide it.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 14:58</span>
+
+            <div class="chatlog__message " data-message-id="954393321915174932" id="message-954393321915174932" title="Message sent: 2022-03-18 14:58">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah, I hid it. Discovered that after turning my PC that night and checking the next morning</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954393336368730112" id="message-954393336368730112" title="Message sent: 2022-03-18 14:58">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Never making that mistake again</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="ugobee#2446" style="">ugobee</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954393221256081458&#39;)">
+That&#39;s not clear to me.  You usually never loose data when you mount something.  You just hide it.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 14:58</span>
+
+            <div class="chatlog__message " data-message-id="954393397374890055" id="message-954393397374890055" title="Message sent: 2022-03-18 14:58">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">That could happen even w/o LVM.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="ugobee#2446" style="">ugobee</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954393397374890055&#39;)">
+That could happen even w/o LVM.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 14:59</span>
+
+            <div class="chatlog__message " data-message-id="954393658118004796" id="message-954393658118004796" title="Message sent: 2022-03-18 14:59">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Makes sense</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 15:06</span>
+
+            <div class="chatlog__message " data-message-id="954395262753853480" id="message-954395262753853480" title="Message sent: 2022-03-18 15:06">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It&#39;s important, when we hit a problem, to determine what&#39;s the source of the problem.  It&#39;s often the fact that we don&#39;t completely understand how everything involved works.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 15:24</span>
+
+            <div class="chatlog__message " data-message-id="954399973204697118" id="message-954399973204697118" title="Message sent: 2022-03-18 15:24">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">That happens to me all the time</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="QuantumRaven#7343" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954399973204697118&#39;)">
+That happens to me all the time                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="ugobee#2446" data-user-id="842381736650211338" style="">ugobee</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 15:48</span>
+
+            <div class="chatlog__message " data-message-id="954405839077261353" id="message-954405839077261353" title="Message sent: 2022-03-18 15:48">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It happens to everyone.  In doubt, write here <img loading="lazy" class="emoji " alt="🙂" title="slight_smile" src="https://twemoji.maxcdn.com/2/svg/1f642.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="ugobee#2446" style="">ugobee</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954405839077261353&#39;)">
+It happens to everyone.  In doubt, write here <img loading="lazy" class="emoji " alt="🙂" title="slight_smile" src="https://twemoji.maxcdn.com/2/svg/1f642.svg">                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 15:49</span>
+
+            <div class="chatlog__message " data-message-id="954406205554557068" id="message-954406205554557068" title="Message sent: 2022-03-18 15:49">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Thanks <img loading="lazy" class="emoji " alt="🙂" title="slight_smile" src="https://twemoji.maxcdn.com/2/svg/1f642.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="thumbsup">
+                                <img class="emoji emoji--small" alt="&#128077;" src="https://twemoji.maxcdn.com/2/svg/1f44d.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/391728494058405890/c98aea1ecb40ee53288057ca6e7758ac.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Beef Broccoli#5067" data-user-id="391728494058405890" style="color: rgb(255,203,70)">Beef Broccoli</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 19:30</span>
+
+            <div class="chatlog__message " data-message-id="954461782498488391" id="message-954461782498488391" title="Message sent: 2022-03-18 19:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">That&#39;s gamechanging advice. This whole time i&#39;ve just been randomly hitting keys on my keyboard when I encounter problems. <img loading="lazy" class="emoji " alt="😛" title="stuck_out_tongue" src="https://twemoji.maxcdn.com/2/svg/1f61b.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="laughing">
+                                <img class="emoji emoji--small" alt="&#128518;" src="https://twemoji.maxcdn.com/2/svg/1f606.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954086892926808064&#39;)">
+Depends upon your memory footprint and your expected load.  If you have plenty of memory, you can turn it off.  Turn on swap can lead to performance issues.  We always turn it off because if there is something that is chewing memory, we want to know about it and don&#39;t want the performance hit of it going to swap                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/404808284495937536/b3e8ac02730b10b3c88bb5fbe3ddd0c3.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Brandosaurus#3722" data-user-id="404808284495937536" style="">Brandosaurus</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 20:12</span>
+
+            <div class="chatlog__message " data-message-id="954472463205564518" id="message-954472463205564518" title="Message sent: 2022-03-18 20:12">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">what kind of system was it?
+in production you always want some amount of swap as a safety buffer. it doesnt need to be 1x or 1.5x the amount of system memory, but you need something.
+windows still thinks its the 90s when ram was expensive and eats into swap early, degrading performance, but linux and bsd are very conservative</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 20:20</span>
+
+            <div class="chatlog__message " data-message-id="954474353062461500" id="message-954474353062461500" title="Message sent: 2022-03-18 20:20">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">These are AWS systems</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954474353062461500&#39;)">
+These are AWS systems                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/404808284495937536/b3e8ac02730b10b3c88bb5fbe3ddd0c3.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Brandosaurus#3722" data-user-id="404808284495937536" style="">Brandosaurus</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 20:24</span>
+
+            <div class="chatlog__message " data-message-id="954475425676021910" id="message-954475425676021910" title="Message sent: 2022-03-18 20:24">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">o yeah when you have something externally managing them the individual systems dont need swap
+same with k8 clusters</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-18 20:29</span>
+
+            <div class="chatlog__message " data-message-id="954476787755274280" id="message-954476787755274280" title="Message sent: 2022-03-18 20:29">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I know some people have turned off the page file in Windows. I haven&#39;t at this point. I have 64G of memory and I probably could.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/403199058656624645/d09044e8f4578c39ccf03bcf0a6fa5ad.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Anor8osiatis#5180" data-user-id="403199058656624645" style="">Anor8osiatis</span>
+
+
+        <span class="chatlog__timestamp">2022-03-19 19:38</span>
+
+            <div class="chatlog__message " data-message-id="954826276676464720" id="message-954826276676464720" title="Message sent: 2022-03-19 19:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Hello to everyone. Anyone here currently using AWS as their infrastructure of choice and if so, what filesystem solution do you use for autoscaling your webservers? had some trouble with efs and currently trying to attach a multi-AZ io2 volume to see the outcome - Ubuntu 20.04</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-19 19:39">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-19 20:30</span>
+
+            <div class="chatlog__message " data-message-id="954839228494254180" id="message-954839228494254180" title="Message sent: 2022-03-19 20:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><span class="mention" title="Anor8osiatis#5180">@Anor8osiatis</span> We use efs quite a bit. It works for us but it isn&#39;t the primary final system.  The data is stored on the instance first and then sent to EFS.  EFS replaced our NFS and rsync tools.  EFS is not fast, but it is reliable.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="954839308811010088" id="message-954839308811010088" title="Message sent: 2022-03-19 20:30">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Our main filesystem is XFS.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="unixpgmr#6413" style="color: rgb(207,36,246)">unixpgmr</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;954839228494254180&#39;)">
+<span class="mention" title="Anor8osiatis#5180">@Anor8osiatis</span> We use efs quite a bit. It works for us but it isn&#39;t the primary final system.  The data is stored on the instance first and then sent to EFS.  EFS replaced our NFS and rsync tools.  EFS is not fast, but it is reliable.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/403199058656624645/d09044e8f4578c39ccf03bcf0a6fa5ad.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Anor8osiatis#5180" data-user-id="403199058656624645" style="">Anor8osiatis</span>
+
+
+        <span class="chatlog__timestamp">2022-03-19 20:38</span>
+
+            <div class="chatlog__message " data-message-id="954841219022864394" id="message-954841219022864394" title="Message sent: 2022-03-19 20:38">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">thing with EFS I got an error with my Apache2 that constantly run out of memory because too many sessions could not be served. during the time of the error all the metrics, server and efs were normal</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/415229820125970432/1ff5b5c4678529d58113503ed8097e14.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="unixpgmr#6413" data-user-id="415229820125970432" style="color: rgb(207,36,246)">unixpgmr</span>
+
+
+        <span class="chatlog__timestamp">2022-03-19 20:40</span>
+
+            <div class="chatlog__message " data-message-id="954841904934182995" id="message-954841904934182995" title="Message sent: 2022-03-19 20:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah. EFS doesn&#39;t report its status all the time. It has time lag, so using it for a webserver probably won&#39;t work. I would never use EFS for any kind of on demand storage where status reporting is critical.</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-19 20:41">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/403199058656624645/d09044e8f4578c39ccf03bcf0a6fa5ad.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Anor8osiatis#5180" data-user-id="403199058656624645" style="">Anor8osiatis</span>
+
+
+        <span class="chatlog__timestamp">2022-03-19 20:43</span>
+
+            <div class="chatlog__message " data-message-id="954842581081141278" id="message-954842581081141278" title="Message sent: 2022-03-19 20:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">so what solution for volume storage autoscaling would you suggest for autoscaling? In orfer that all the servers would get the changes at the same time. both old and freshly created by the autoscale?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/928132640987553813/95db1124e30fa0fca8cb3e0b21052f26.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="fraynium#1661" data-user-id="928132640987553813" style="">fraynium</span>
+
+
+        <span class="chatlog__timestamp">2022-03-21 11:10</span>
+
+            <div class="chatlog__message " data-message-id="955423042866126860" id="message-955423042866126860" title="Message sent: 2022-03-21 11:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Am I the only one who uses Ext4?</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-21 11:10">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/928132640987553813/95db1124e30fa0fca8cb3e0b21052f26.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="fraynium#1661" style="">fraynium</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;955423042866126860&#39;)">
+Am I the only one who uses Ext4?                    </span>
+
+                        <span class="chatlog__reference-edited-timestamp" title="2022-03-21 11:10">(edited)</span>
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2022-03-21 12:15</span>
+
+            <div class="chatlog__message " data-message-id="955439495522705428" id="message-955439495522705428" title="Message sent: 2022-03-21 12:15">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I think most systems use ext4. It&#39;s default</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/404808284495937536/b3e8ac02730b10b3c88bb5fbe3ddd0c3.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Brandosaurus#3722" data-user-id="404808284495937536" style="">Brandosaurus</span>
+
+
+        <span class="chatlog__timestamp">2022-03-21 12:15</span>
+
+            <div class="chatlog__message " data-message-id="955439608622100560" id="message-955439608622100560" title="Message sent: 2022-03-21 12:15">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">ya most desktop distros default to ext4.
+when i was younger i cared way more about filesystems than i do now. i just put xfs and forget about it</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Zig#3569" style="color: rgb(176,226,152)">Zig</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;955439495522705428&#39;)">
+I think most systems use ext4. It&#39;s default                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/928132640987553813/95db1124e30fa0fca8cb3e0b21052f26.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="fraynium#1661" data-user-id="928132640987553813" style="">fraynium</span>
+
+
+        <span class="chatlog__timestamp">2022-03-21 12:15</span>
+
+            <div class="chatlog__message " data-message-id="955439627710386217" id="message-955439627710386217" title="Message sent: 2022-03-21 12:15">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Now alot of Linux distributions are switching to btrfs</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/404808284495937536/b3e8ac02730b10b3c88bb5fbe3ddd0c3.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Brandosaurus#3722" data-user-id="404808284495937536" style="">Brandosaurus</span>
+
+
+        <span class="chatlog__timestamp">2022-03-21 12:16</span>
+
+            <div class="chatlog__message " data-message-id="955439699097440286" id="message-955439699097440286" title="Message sent: 2022-03-21 12:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">now btrfs is the one exception
+i cant sand it</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2022-03-21 12:16</span>
+
+            <div class="chatlog__message " data-message-id="955439741745123378" id="message-955439741745123378" title="Message sent: 2022-03-21 12:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I&#39;ve never used btrfs</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/404808284495937536/b3e8ac02730b10b3c88bb5fbe3ddd0c3.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Brandosaurus#3722" data-user-id="404808284495937536" style="">Brandosaurus</span>
+
+
+        <span class="chatlog__timestamp">2022-03-21 12:16</span>
+
+            <div class="chatlog__message " data-message-id="955439745687777340" id="message-955439745687777340" title="Message sent: 2022-03-21 12:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">it seems like every kernel update breaks encryption</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/404808284495937536/b3e8ac02730b10b3c88bb5fbe3ddd0c3.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Brandosaurus#3722" style="">Brandosaurus</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;955439699097440286&#39;)">
+now btrfs is the one exception
+i cant sand it                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/928132640987553813/95db1124e30fa0fca8cb3e0b21052f26.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="fraynium#1661" data-user-id="928132640987553813" style="">fraynium</span>
+
+
+        <span class="chatlog__timestamp">2022-03-21 12:16</span>
+
+            <div class="chatlog__message " data-message-id="955439771788935238" id="message-955439771788935238" title="Message sent: 2022-03-21 12:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I dislike it. I really dislike it indeed.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/404808284495937536/b3e8ac02730b10b3c88bb5fbe3ddd0c3.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Brandosaurus#3722" data-user-id="404808284495937536" style="">Brandosaurus</span>
+
+
+        <span class="chatlog__timestamp">2022-03-21 12:17</span>
+
+            <div class="chatlog__message " data-message-id="955439946049662976" id="message-955439946049662976" title="Message sent: 2022-03-21 12:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">reiserfs was another fun one</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="955440058666717184" id="message-955440058666717184" title="Message sent: 2022-03-21 12:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">and i think we&#39;re all in universal agreement that hfs+ is garbage</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+</div>
+
+<div class="postamble">
+    <div class="postamble__entry">Exported 123 message(s)</div>
+</div>
+
+</body>
+
+</html>
