@@ -1,0 +1,3042 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>DevOps, SRE, &amp; Infrastructure - cheap-self-hosted-server-solutions</title>
+    <meta charset="utf-8">
+    <link rel="icon" 
+      type="image/png" 
+      href="../../favicon.ico">
+    <meta name="viewport" content="width=device-width">
+
+    <style>
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-300.woff);
+            font-weight: 300;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-400.woff);
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-500.woff);
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-600.woff);
+            font-weight: 600;
+        }
+
+        @font-face {
+            font-family: Whitney;
+            src: url(https://cdn.jsdelivr.net/gh/Tyrrrz/DiscordFonts@master/whitney-700.woff);
+            font-weight: 700;
+        }
+
+        body {
+            background-color: #36393e;
+            color: #dcddde;
+            font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+        }
+
+        a {
+            color: #00aff4;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        img {
+            object-fit: contain;
+        }
+
+        .markdown {
+            max-width: 100%;
+            line-height: 1.3;
+            overflow-wrap: break-word;
+        }
+
+        .preserve-whitespace {
+            white-space: pre-wrap;
+        }
+
+        .spoiler-text {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .spoiler-text--hidden {
+            cursor: pointer;
+            background-color: #202225;
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .spoiler-text--hidden:hover {
+            background-color: rgba(32, 34, 37, 0.8);
+        }
+
+        .spoiler-text--hidden::selection {
+            color: rgba(0, 0, 0, 0);
+        }
+
+        .quote {
+            display: flex;
+            margin: 0.05em 0;
+        }
+
+        .quote::before {
+            content: "";
+            margin-right: 0.5em;
+            border: 2px solid #4f545c;
+            border-radius: 3px;
+        }
+
+        .pre {
+            background-color: #2f3136;
+            font-family: "Consolas", "Courier New", Courier, monospace;
+        }
+
+        .pre--multiline {
+            margin-top: 0.25em;
+            padding: 0.5em;
+            border: 2px solid #282b30;
+            border-radius: 5px;
+            color: #b9bbbe;
+        }
+
+        .pre--multiline.hljs {
+            background-color: #2f3136;
+            color: #b9bbbe;
+        }
+
+        .pre--inline {
+            padding: 2px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        .mention {
+            border-radius: 3px;
+            padding: 0 2px;
+            color: #dee0fc;
+            background-color: rgba(88, 101, 242, .3);
+            font-weight: 500;
+        }
+
+        .mention:hover {
+            background-color: #5865f2;
+            color: #ffffff
+        }
+
+        .timestamp {
+            border-radius: 3px;
+            padding: 0 2px;
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .emoji {
+            width: 1.325em;
+            height: 1.325em;
+            margin: 0 0.06em;
+            vertical-align: -0.4em;
+        }
+
+        .emoji--small {
+            width: 1em;
+            height: 1em;
+        }
+
+        .emoji--large {
+            width: 2.8em;
+            height: 2.8em;
+        }
+
+        .preamble {
+            display: grid;
+            margin: 0 0.3em 0.6em 0.3em;
+            max-width: 100%;
+            grid-template-columns: auto 1fr;
+        }
+
+        .preamble__guild-icon-container {
+            grid-column: 1;
+        }
+
+        .preamble__guild-icon {
+            max-width: 88px;
+            max-height: 88px;
+        }
+
+        .preamble__entries-container {
+            grid-column: 2;
+            margin-left: 0.6em;
+        }
+
+        .preamble__entry {
+            font-size: 1.4em;
+            color: #ffffff;
+        }
+
+        .preamble__entry--small {
+            font-size: 1em;
+        }
+
+        .chatlog {
+            max-width: 100%;
+        }
+
+        .chatlog__message-group {
+            display: grid;
+            margin: 0 0.6em;
+            padding: 0.9em 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            grid-template-columns: auto 1fr;
+        }
+
+        .chatlog__reference-symbol {
+            grid-column: 1;
+            margin: 8px 4px 4px 18px;
+            border-left: 2px solid #4f545c;
+            border-top: 2px solid #4f545c;
+            border-radius: 8px 0 0 0;
+        }
+
+        .chatlog__reference {
+            display: flex;
+            grid-column: 2;
+            margin-bottom: 0.25em;
+            font-size: 0.875em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            align-items: center;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-avatar {
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            margin-right: 0.25em;
+        }
+
+        .chatlog__reference-name {
+            margin-right: 0.3em;
+            font-weight: 600;
+        }
+
+        .chatlog__reference-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__reference-content a:hover {
+            text-decoration: none;
+        }
+
+        .chatlog__reference-link {
+            cursor: pointer;
+            color: #b5b6b8;
+        }
+
+        .chatlog__reference-link * {
+            display: inline;
+            pointer-events: none;
+        }
+
+        .chatlog__reference-link:hover {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-link:hover *:not(.spoiler-text) {
+            color: #ffffff;
+        }
+
+        .chatlog__reference-edited-timestamp {
+            margin-left: 0.25em;
+            font-size: 0.8em;
+            unicode-bidi: bidi-override;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__author-avatar-container {
+            grid-column: 1;
+            width: 40px;
+            height: 40px;
+            margin-right: 16px;
+        }
+
+        .chatlog__author-avatar {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+
+        .chatlog__messages {
+            grid-column: 2;
+            min-width: 50%;
+            direction: ltr;
+        }
+
+        .chatlog__author-name {
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .chatlog__timestamp {
+            margin-left: 0.3em;
+            font-size: 0.75em;
+            direction: ltr;
+            unicode-bidi: bidi-override;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__message {
+            padding: 0.1em 0.3em;
+            margin: 0 -0.3em;
+            background-color: transparent;
+            transition: background-color 1s ease;
+        }
+
+        .chatlog__message--highlighted {
+            background-color: rgba(114, 137, 218, 0.2);
+        }
+
+        .chatlog__message--pinned {
+            background-color: rgba(249, 168, 37, 0.05);
+        }
+
+        .chatlog__content {
+            font-size: 0.95em;
+            word-wrap: break-word;
+        }
+
+        .chatlog__edited-timestamp {
+            margin-left: 0.15em;
+            font-size: 0.8em;
+        }
+
+        .chatlog__attachment {
+            display: inline-block;
+            position: relative;
+            margin-top: 0.3em;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden {
+            cursor: pointer;
+            box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .chatlog__attachment--hidden * {
+            pointer-events: none;
+        }
+
+        .chatlog__attachment-spoiler-caption {
+            display: none;
+            z-index: 999;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 0.4em 0.8em;
+            background-color: rgba(0, 0, 0, 0.9);
+            border-radius: 20px;
+            color: #dcddde;
+            font-size: 0.9em;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-spoiler-caption {
+            display: block;
+        }
+
+        .chatlog__attachment--hidden:hover .chatlog__attachment-spoiler-caption {
+            color: #fff;
+        }
+
+        .chatlog__attachment-media {
+            vertical-align: top;
+            max-width: 45vw;
+            max-height: 500px;
+            border-radius: 3px;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-media {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic {
+            width: 100%;
+            max-width: 520px;
+            height: 40px;
+            padding: 10px;
+            background-color: #2f3136;
+            border: 1px solid #292b2f;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .chatlog__attachment--hidden .chatlog__attachment-generic {
+            filter: blur(44px);
+        }
+
+        .chatlog__attachment-generic-icon {
+            float: left;
+            width: 30px;
+            height: 100%;
+            margin-right: 10px;
+        }
+
+        .chatlog__attachment-generic-size {
+            color: #72767d;
+            font-size: 12px;
+        }
+
+        .chatlog__attachment-generic-name {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .chatlog__edited-timestamp {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatlog__embed {
+            display: flex;
+            margin-top: 0.3em;
+            max-width: 520px;
+        }
+
+        .chatlog__embed-color-pill {
+            flex-shrink: 0;
+            width: 0.25em;
+            border-top-left-radius: 3px;
+            border-bottom-left-radius: 3px;
+        }
+
+        .chatlog__embed-color-pill--default {
+            background-color: #202225;
+        }
+
+        .chatlog__embed-content-container {
+            display: flex;
+            flex-direction: column;
+            padding: 0.5em 0.6em;
+            background-color: rgba(46, 48, 54, 0.3);
+            border: 1px solid rgba(46, 48, 54, 0.6);
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        .chatlog__embed-content {
+            display: flex;
+            width: 100%;
+        }
+
+        .chatlog__embed-text {
+            flex: 1;
+        }
+
+        .chatlog__embed-author {
+            display: flex;
+            margin-bottom: 0.3em;
+            align-items: center;
+        }
+
+        .chatlog__embed-author-icon {
+            margin-right: 0.5em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .chatlog__embed-author-name {
+            font-size: 0.875em;
+            font-weight: 600;
+            direction: ltr;
+            unicode-bidi: bidi-override;
+            color: #ffffff
+        }
+
+        .chatlog__embed-author-name-link {
+            color: #ffffff;
+        }
+
+        .chatlog__embed-title {
+            margin-bottom: 0.2em;
+            font-size: 0.875em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-description {
+            font-weight: 500;
+            font-size: 0.85em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0 0.5em;
+        }
+
+        .chatlog__embed-field {
+            flex: 0;
+            min-width: 100%;
+            max-width: 506px;
+            padding-top: 0.6em;
+            font-size: 0.875em;
+        }
+
+        .chatlog__embed-field--inline {
+            flex: 1;
+            flex-basis: auto;
+            min-width: 150px;
+        }
+
+        .chatlog__embed-field-name {
+            margin-bottom: 0.2em;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .chatlog__embed-field-value {
+            font-weight: 500;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-thumbnail {
+            flex: 0;
+            margin-left: 1.2em;
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-image-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-image {
+            max-width: 500px;
+            max-height: 400px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-footer {
+            margin-top: 0.6em;
+            color: #dcddde;
+        }
+
+        .chatlog__embed-footer-icon {
+            margin-right: 0.2em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+
+        .chatlog__embed-footer-text {
+            vertical-align: middle;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        .chatlog__embed-plainimage {
+            vertical-align: top;
+            max-width: 45vw;
+            max-height: 500px;
+            border-radius: 3px;
+        }
+
+        .chatlog__embed-spotify {
+            border: 0;
+        }
+
+        .chatlog__embed-youtube-container {
+            margin-top: 0.6em;
+        }
+
+        .chatlog__embed-youtube {
+            border: 0;
+            border-radius: 3px;
+        }
+
+        .chatlog__reactions {
+            display: flex;
+        }
+
+        .chatlog__reaction {
+            display: flex;
+            align-items: center;
+            margin: 0.35em 0.1em 0.1em 0;
+            padding: .125rem .375rem;
+            background-color: #2f3136;
+            border-radius: 8px;
+            border-color: transparent;
+            border-width: 1px;
+            border-style: solid;
+        }
+
+        .chatlog__reaction:hover {
+            border-color: hsla(0,0%,100%,.2);
+            border-width: 1px;
+            border-style: solid;
+            background-color: transparent;
+        }
+
+        .chatlog__reaction-count {
+            min-width: 9px;
+            margin-left: 0.35em;
+            font-size: 0.875em;
+            color: #b9bbbe;
+        }
+
+        .chatlog__reaction:hover .chatlog__reaction-count {
+            color: #dcddde;
+        }
+
+        .chatlog__bot-tag {
+            position: relative;
+            top: -.1em;
+            margin-left: 0.3em;
+            padding: 0.05em 0.3em;
+            border-radius: 3px;
+            line-height: 1.3;
+            background-color: #5865F2;
+            color: #ffffff;
+            font-size: 0.625em;
+            font-weight: 500;
+        }
+
+        .postamble {
+            margin: 1.4em 0.3em 0.6em 0.3em;
+            padding: 1em;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .postamble__entry {
+            color: #ffffff;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/solarized-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.pre--multiline').forEach(block => hljs.highlightBlock(block));
+        });
+    </script>
+
+    <script>
+        function scrollToMessage(event, id) {
+            var element = document.getElementById('message-' + id);
+
+            if (element) {
+                event.preventDefault();
+
+                element.classList.add('chatlog__message--highlighted');
+
+                window.scrollTo({
+                    top: element.getBoundingClientRect().top - document.body.getBoundingClientRect().top - (window.innerHeight / 2),
+                    behavior: 'smooth'
+                });
+
+                window.setTimeout(function() {
+                    element.classList.remove('chatlog__message--highlighted');
+                }, 2000);
+            }
+        }
+
+        function showSpoiler(event, element) {
+            if (element && element.classList.contains('spoiler-text--hidden')) {
+                event.preventDefault();
+                element.classList.remove('spoiler-text--hidden');
+            }
+            if (element && element.classList.contains('chatlog__attachment--hidden')) {
+                event.preventDefault();
+                element.classList.remove('chatlog__attachment--hidden');
+            }
+        }
+    </script>
+
+    <svg style="display: none">
+        <symbol id="icon-attachment" viewBox="0 0 720 960">
+            <path fill="#f4f5fb" d="M50,935a25,25,0,0,1-25-25V50A25,25,0,0,1,50,25H519.6L695,201.32V910a25,25,0,0,1-25,25Z" />
+            <path fill="#7789c4" d="M509.21,50,670,211.63V910H50V50H509.21M530,0H50A50,50,0,0,0,0,50V910a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50h0V191Z" />
+            <path fill="#f4f5fb" d="M530,215a25,25,0,0,1-25-25V50a25,25,0,0,1,16.23-23.41L693.41,198.77A25,25,0,0,1,670,215Z" />
+            <path fill="#7789c4" d="M530,70.71,649.29,190H530V70.71M530,0a50,50,0,0,0-50,50V190a50,50,0,0,0,50,50H670a50,50,0,0,0,50-50Z" />
+        </symbol>
+    </svg>
+</head>
+<body>
+
+<div class="preamble">
+    <div class="preamble__guild-icon-container">
+        <img class="preamble__guild-icon" src="https://cdn.discordapp.com/icons/419745677585940482/a_36f1bfe78afb2a86f04ecdaeeeedeccd.png" alt="Guild icon" loading="lazy">
+    </div>
+    <div class="preamble__entries-container">
+        <div class="preamble__entry">DevOps, SRE, &amp; Infrastructure</div>
+        <div class="preamble__entry">#cheap-self-hosted-server-solutions</div>
+
+
+    </div>
+</div>
+
+<div class="chatlog">
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Zig#3569" data-user-id="272906368267190282" style="color: rgb(176,226,152)">Zig</span>
+
+
+        <span class="chatlog__timestamp">2022-03-28 15:00</span>
+
+            <div class="chatlog__message " data-message-id="958017629950451753" id="message-958017629950451753" title="Message sent: 2022-03-28 15:00">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">This week&#39;s topic is <strong>Cheap Self-Hosted Server Solutions</strong>!
+
+What do people use for their servers? What is the cheapest? It it reliable? How is their support? 
+
+Let&#39;s discuss what people use for their solution and share the different solutions out there.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-28 16:15</span>
+
+            <div class="chatlog__message " data-message-id="958036557363830825" id="message-958036557363830825" title="Message sent: 2022-03-28 16:15">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">- ~$100 liquidated office mini Dell Optiplex from your local discount electronics shop
+- punch holes in router as needed
+- dynamic DNS solution to update record if your IP changes
+- reliable enough but also dirt cheap to replace if breaks
+- there is no support, good luck!</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-28 16:15">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/652221053346512909/5f5da5512b8e96fb38c43b7be3e0787e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="afro_coder#6436" data-user-id="652221053346512909" style="">afro_coder(he/him)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-28 16:43</span>
+
+            <div class="chatlog__message " data-message-id="958043745268404244" id="message-958043745268404244" title="Message sent: 2022-03-28 16:43">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Probably a raspi + cloudflare tunnels<img loading="lazy" class="emoji " alt="🤔" title="thinking" src="https://twemoji.maxcdn.com/2/svg/1f914.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/439121172467154946/a_98ee2f6e54774575d2d269de5131e043.gif?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="mr.ducky#2947" data-user-id="439121172467154946" style="">norway.1337.hax0r #fraud is scam</span>
+
+
+        <span class="chatlog__timestamp">2022-03-28 18:53</span>
+
+            <div class="chatlog__message " data-message-id="958076285064724560" id="message-958076285064724560" title="Message sent: 2022-03-28 18:53">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">lenovo thinkcentre with i3 and with a ssd  that i got from my dad for free</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958076378882932787" id="message-958076378882932787" title="Message sent: 2022-03-28 18:53">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">and no support from my dad</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-28 19:50</span>
+
+            <div class="chatlog__message " data-message-id="958090770668191788" id="message-958090770668191788" title="Message sent: 2022-03-28 19:50">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Dell R610s are relatively cheap if you need more than what an old computer / raspberry pi can give you.  They are also durable as heck, nearly indestructible and have idrac/ipmi/remote console stuff.
+This was something like an UI edgerouter can make a pretty nice home setup</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/675172094773952512/c2e7f92d57d242a747cf99850c3e9fdb.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="TheNakedZealot#0920" data-user-id="675172094773952512" style="">TheNakedZealot</span>
+
+
+        <span class="chatlog__timestamp">2022-03-28 22:34</span>
+
+            <div class="chatlog__message " data-message-id="958131897983197214" id="message-958131897983197214" title="Message sent: 2022-03-28 22:34">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I like Intel NUCs if you have need for x86 hw-accelerated workloads. I run a pretty intense media system at home run on Kubernetes, mainly around the use of Plex and Ersatz, and the NUCs are key; a single i5 unit can support many simultaneous transcodes with the iGPU, and doesn&#39;t require the footprint of a PC transcoding in software (many cores at high speed required for 4k transcodes) or with a dedicated GPU doing hw-acceleration (such as leveraging an old Nvidia Geforce card, which is software limited through drivers as to how many simultaneous transcodes is allowed at once).</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/351860913621696524/fe4ab2af70e3f20c39b4c03e4ef42e75.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Agente#3931" data-user-id="351860913621696524" style="">Agentless</span>
+
+
+        <span class="chatlog__timestamp">2022-03-28 23:09</span>
+
+            <div class="chatlog__message " data-message-id="958140855099727883" id="message-958140855099727883" title="Message sent: 2022-03-28 23:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I bought one of these: <a href="https://www.gigabyte.com/Mini-PcBarebone">https://www.gigabyte.com/Mini-PcBarebone</a>
+Added Docker + Jenkins; for microwebsites and microservices is pretty ok, i have like 6 bots there and several personal projects in containers</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/272906368267190282/3107703f304ebd04f5eba5fe64b286e1.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Zig#3569" style="color: rgb(176,226,152)">Zig</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958017629950451753&#39;)">
+This week&#39;s topic is <strong>Cheap Self-Hosted Server Solutions</strong>!
+
+What do people use for their servers? What is the cheapest? It it reliable? How is their support? 
+
+Let&#39;s discuss what people use for their solution and share the different solutions out there.                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-29 00:05</span>
+
+            <div class="chatlog__message " data-message-id="958155020061253642" id="message-958155020061253642" title="Message sent: 2022-03-29 00:05">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Do people count <img loading="lazy" class="emoji " alt="👀" title="eyes" src="https://twemoji.maxcdn.com/2/svg/1f440.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="eyes">
+                                <img class="emoji emoji--small" alt="&#128064;" src="https://twemoji.maxcdn.com/2/svg/1f440.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">2</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/426930874706296834/3daa22f26e95dd2961be91d6a01c5bab.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="DagoRed#6936" data-user-id="426930874706296834" style="">DagoRed</span>
+
+
+        <span class="chatlog__timestamp">2022-03-29 16:40</span>
+
+            <div class="chatlog__message " data-message-id="958405338468589648" id="message-958405338468589648" title="Message sent: 2022-03-29 16:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">So cheapest self hosted solutions: odroid c2 running Arch Linux ARM. Stack them for a k3s server and use GitLab CI to build natively.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/234812423746486274/baa6048874ae1ea55067ffdf9ee2fe8b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Rat#2957" data-user-id="234812423746486274" style="color: rgb(254,95,85)">Rat</span>
+
+
+        <span class="chatlog__timestamp">2022-03-29 18:40</span>
+
+            <div class="chatlog__message " data-message-id="958435587067617350" id="message-958435587067617350" title="Message sent: 2022-03-29 18:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Dell poweredge r610s</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958435610425692240" id="message-958435610425692240" title="Message sent: 2022-03-29 18:40">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">dime a dozen on ebay/facebook marketplace</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Snowie (D4rk)#0116" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958090770668191788&#39;)">
+Dell R610s are relatively cheap if you need more than what an old computer / raspberry pi can give you.  They are also durable as heck, nearly indestructible and have idrac/ipmi/remote console stuff.
+This was something like an UI edgerouter can make a pretty nice home setup                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/234812423746486274/baa6048874ae1ea55067ffdf9ee2fe8b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Rat#2957" data-user-id="234812423746486274" style="color: rgb(254,95,85)">Rat</span>
+
+
+        <span class="chatlog__timestamp">2022-03-29 18:41</span>
+
+            <div class="chatlog__message " data-message-id="958435640058458175" id="message-958435640058458175" title="Message sent: 2022-03-29 18:41">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">dammit snowie beat me to it. <img loading="lazy" class="emoji " alt="😦" title="frowning" src="https://twemoji.maxcdn.com/2/svg/1f626.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-29 20:04</span>
+
+            <div class="chatlog__message " data-message-id="958456560223404102" id="message-958456560223404102" title="Message sent: 2022-03-29 20:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">how cheap is cheap? under $1500? <img loading="lazy" class="emoji " alt="😁" title="grin" src="https://twemoji.maxcdn.com/2/svg/1f601.svg">  build my Kuberdoo as your self-hosted Kubernetes cluster: <a href="https://hackaday.io/project/27869-kuberdoo">https://hackaday.io/project/27869-kuberdoo</a> <img loading="lazy" class="emoji " alt="💸" title="money_with_wings" src="https://twemoji.maxcdn.com/2/svg/1f4b8.svg"></span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill" style="background-color: rgba(51,51,51,255)"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://hackaday.io/project/27869-kuberdoo">
+                                                        <div class="markdown preserve-whitespace">Kuberdoo</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">The Kuberdoo is a mini desktop computer cluster. It consists of 6 UDOO X86 boards, router, switch, power supply, and custom built acrylic case. The goal of the project is a desktop platform for testing bare-metal multi-machine technologies that are otherwise difficult or impossible to do with Virtual Machines.</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-2.discordapp.net/external/g0DJtzQOTpNqu1c6IwGlucvTgKovMZrVj6-Krij59v4/https/cdn.hackaday.io/images/resize/600x600/8348551508944213071.jpg">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-2.discordapp.net/external/g0DJtzQOTpNqu1c6IwGlucvTgKovMZrVj6-Krij59v4/https/cdn.hackaday.io/images/resize/600x600/8348551508944213071.jpg" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="andyshinn#5555" style="">andyshinn</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958456560223404102&#39;)">
+how cheap is cheap? under $1500? <img loading="lazy" class="emoji " alt="😁" title="grin" src="https://twemoji.maxcdn.com/2/svg/1f601.svg">  build my Kuberdoo as your self-hosted Kubernetes cluster: <a href="https://hackaday.io/project/27869-kuberdoo">https://hackaday.io/project/27869-kuberdoo</a> <img loading="lazy" class="emoji " alt="💸" title="money_with_wings" src="https://twemoji.maxcdn.com/2/svg/1f4b8.svg">                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-29 22:20</span>
+
+            <div class="chatlog__message " data-message-id="958490919039025192" id="message-958490919039025192" title="Message sent: 2022-03-29 22:20">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I&#39;ve actually been looking into those UDOO boards as mobile compute stations, how are they?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Snowie (D4rk)#0116" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958490919039025192&#39;)">
+I&#39;ve actually been looking into those UDOO boards as mobile compute stations, how are they?                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-29 22:22</span>
+
+            <div class="chatlog__message " data-message-id="958491318470991932" id="message-958491318470991932" title="Message sent: 2022-03-29 22:22">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">slower than most cheap desktops in similar price range but worlds better than the fastest rpis</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="andyshinn#5555" style="">andyshinn</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958491318470991932&#39;)">
+slower than most cheap desktops in similar price range but worlds better than the fastest rpis                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-29 22:22</span>
+
+            <div class="chatlog__message " data-message-id="958491466928357457" id="message-958491466928357457" title="Message sent: 2022-03-29 22:22">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah I think I was looking at uh <a href="https://shop.udoo.org/en/udoo-bolt-v8.html">https://shop.udoo.org/en/udoo-bolt-v8.html</a></span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://shop.udoo.org/en/udoo-bolt-v8.html">
+                                                        <div class="markdown preserve-whitespace">UDOO BOLT V8</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">Almost twice as fast as the MacBook Pro 13</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-1.discordapp.net/external/5d455i8q6YX94XUTCs-TV5iqSDf8XDG4vNu8Lk4pXC4/https/shop.udoo.org/media/catalog/product/cache/f680c5c3387e9b8d5ac8dbc014327f3b/u/d/udoo_bolt_top_gaming_1_11.jpg">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-1.discordapp.net/external/5d455i8q6YX94XUTCs-TV5iqSDf8XDG4vNu8Lk4pXC4/https/shop.udoo.org/media/catalog/product/cache/f680c5c3387e9b8d5ac8dbc014327f3b/u/d/udoo_bolt_top_gaming_1_11.jpg" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+            </div>
+            <div class="chatlog__message " data-message-id="958491554425765959" id="message-958491554425765959" title="Message sent: 2022-03-29 22:23">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">And that was kind of our determination. It looks like they were far better than the raspberry pies, and the advantage at least for us is that the voltage / current makes them a lot more ideal for in a car</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-29 22:24</span>
+
+            <div class="chatlog__message " data-message-id="958491804846682163" id="message-958491804846682163" title="Message sent: 2022-03-29 22:24">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">those came out after i built mine. they look much better price/power ratio. i probably would have used the bolts if i waited a bit more</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-29 22:29</span>
+
+            <div class="chatlog__message " data-message-id="958493255018893332" id="message-958493255018893332" title="Message sent: 2022-03-29 22:29">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah these honestly look pretty fantastic xD</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/652221053346512909/5f5da5512b8e96fb38c43b7be3e0787e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="afro_coder#6436" data-user-id="652221053346512909" style="">afro_coder(he/him)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 06:10</span>
+
+            <div class="chatlog__message " data-message-id="958609148617052190" id="message-958609148617052190" title="Message sent: 2022-03-30 06:10">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">There are those ryzen nucs on aliexpress too that would make up for nodes, bit too out of my budget tho</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Snowie (D4rk)#0116" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958491554425765959&#39;)">
+And that was kind of our determination. It looks like they were far better than the raspberry pies, and the advantage at least for us is that the voltage / current makes them a lot more ideal for in a car                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/404808284495937536/b3e8ac02730b10b3c88bb5fbe3ddd0c3.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Brandosaurus#3722" data-user-id="404808284495937536" style="">Brandosaurus</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 12:37</span>
+
+            <div class="chatlog__message " data-message-id="958706426539311145" id="message-958706426539311145" title="Message sent: 2022-03-30 12:37">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">fun fact: the vast majority of ECMs are powerpc based</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/234812423746486274/baa6048874ae1ea55067ffdf9ee2fe8b.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Rat#2957" style="color: rgb(254,95,85)">Rat</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958435610425692240&#39;)">
+dime a dozen on ebay/facebook marketplace                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 18:11</span>
+
+            <div class="chatlog__message " data-message-id="958790467661729792" id="message-958790467661729792" title="Message sent: 2022-03-30 18:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">If a dime is 3-400$</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958790702622441532" id="message-958790702622441532" title="Message sent: 2022-03-30 18:11">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Oh, 610, for some reason I read that as 720</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958790728664891422" id="message-958790728664891422" title="Message sent: 2022-03-30 18:12">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Still over a hundo each</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="dronakin#4404" style="">Dunk</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958790728664891422&#39;)">
+Still over a hundo each                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 18:44</span>
+
+            <div class="chatlog__message " data-message-id="958798990617485423" id="message-958798990617485423" title="Message sent: 2022-03-30 18:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I mean yeah. But there is a certain level of performance/dollar. An R610 isn&#39;t as cheap as the original raspberry Pis had been, but they are also dozens of times more powerful. 
+And like (over simplified math) - Dell R610 (2xX5660, 48Gb Mem) vs RPi (lets say quad core arm, 2Gb)
+- (2x 6 cores or 2x 12 threads at 2.8-3.2Ghz) vs  (4 cores/threads at 1.3Ghz)
+- (up to 288Gb mem - most of the 150$ 610s come with 48Gb) vs (2Gb)
+- Disk expansions
+
+If the RPi is lets say 35$:
+ 150 / 35 = 4
+- 4*4 cores = 16 cores (at 1.3Ghz)
+- 4*2 Gb = 8 Gb memory
+- Excludes SD cards/etc</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-30 18:45">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958799274022436864" id="message-958799274022436864" title="Message sent: 2022-03-30 18:46">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">So I guess cheap is....a little up to each person to define xD. But I consider R610s a dime a dozen because compared to like new gen Dell or SM servers, which can run 40k$/each if you aren&#39;t careful.... 150$ is cheap</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 18:47</span>
+
+            <div class="chatlog__message " data-message-id="958799641577680947" id="message-958799641577680947" title="Message sent: 2022-03-30 18:47">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">are we accounting for other costs as well?  power? noise? heat? size? those R610s probably sound like a jet engine, right? i&#39;d also bet the yearly power consumption costs <em>more</em> than the server itself. also, where do you put that awkward sized thing in your house?</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-30 18:47">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 18:47</span>
+
+            <div class="chatlog__message " data-message-id="958799741783773194" id="message-958799741783773194" title="Message sent: 2022-03-30 18:47">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">no</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="andyshinn#5555" style="">andyshinn</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958799641577680947&#39;)">
+are we accounting for other costs as well?  power? noise? heat? size? those R610s probably sound like a jet engine, right? i&#39;d also bet the yearly power consumption costs <em>more</em> than the server itself. also, where do you put that awkward sized thing in your house?                    </span>
+
+                        <span class="chatlog__reference-edited-timestamp" title="2022-03-30 18:47">(edited)</span>
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 18:49</span>
+
+            <div class="chatlog__message " data-message-id="958800077047070820" id="message-958800077047070820" title="Message sent: 2022-03-30 18:49">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">The R610s, when maintained (which really isn&#39;t hard) are pretty heccin quiet, and tend to draw around 160 watts under a reasonable load for me. Which yes, isn&#39;t the lowest you could get, but also..compared to my desktop which idles at around 500 watts and can easily use 1000 watts under load...</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958800304571289640" id="message-958800304571289640" title="Message sent: 2022-03-30 18:50">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I mean its not going to be anything close to a RPi in draw, an RPi is ARM based and meant to be tiny</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958800434162712627" id="message-958800434162712627" title="Message sent: 2022-03-30 18:50">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I just find that for hosting things, while they are good to start with, expanding them becomes a little silly at a point -shrug-, and after that point R610s are basically the cheapest for quality servers</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 18:54</span>
+
+            <div class="chatlog__message " data-message-id="958801459154157688" id="message-958801459154157688" title="Message sent: 2022-03-30 18:54">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">how the heck does your desktop idle so high? do you disable all the power saving stuff or something?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 18:55</span>
+
+            <div class="chatlog__message " data-message-id="958801759365660752" id="message-958801759365660752" title="Message sent: 2022-03-30 18:55">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Power draw</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958801895009427587" id="message-958801895009427587" title="Message sent: 2022-03-30 18:56">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I have two pis that was $200 and does every bit of what I need. So much so that I don’t turn on the hp proliant DL380P g8</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958802166477357076" id="message-958802166477357076" title="Message sent: 2022-03-30 18:57">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">No server chassis is ‘quiet’ maybe for a garage but not a room</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958802235532394506" id="message-958802235532394506" title="Message sent: 2022-03-30 18:57">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Noise bleed is pretty terrible. My one hp can be heard in all rooms and just outside my front door</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958802387894677595" id="message-958802387894677595" title="Message sent: 2022-03-30 18:58">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">The pi devices use 10w total</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 18:58</span>
+
+            <div class="chatlog__message " data-message-id="958802409696661514" id="message-958802409696661514" title="Message sent: 2022-03-30 18:58">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">the last Dell servers i have experience with were PE 2950s and those things were louder than small planes</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958802703348289556" id="message-958802703348289556" title="Message sent: 2022-03-30 18:59">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">but i suppose they could have gotten better and with all power saving stuff / C state stuff in later CPUs it could ramp down quite a bit at idle</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 18:59</span>
+
+            <div class="chatlog__message " data-message-id="958802752077725738" id="message-958802752077725738" title="Message sent: 2022-03-30 18:59">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Just the two cpus in the hp have a tdp of 190, paired with the disks and ram it’s probably drawing over that easily</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958802805672521738" id="message-958802805672521738" title="Message sent: 2022-03-30 19:00">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">There’s a reason I call mine the F-Zero</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:00</span>
+
+            <div class="chatlog__message " data-message-id="958802823829651497" id="message-958802823829651497" title="Message sent: 2022-03-30 19:00">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">yea, but not <em>at idle</em></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:00</span>
+
+            <div class="chatlog__message " data-message-id="958802857186959471" id="message-958802857186959471" title="Message sent: 2022-03-30 19:00">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Idle means nothing really</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958802915110289439" id="message-958802915110289439" title="Message sent: 2022-03-30 19:00">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I’d say it still draws close to that at idle</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:00</span>
+
+            <div class="chatlog__message " data-message-id="958802951873380422" id="message-958802951873380422" title="Message sent: 2022-03-30 19:00">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">it means the server sitting there on not doing anything</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:00</span>
+
+            <div class="chatlog__message " data-message-id="958802974543585331" id="message-958802974543585331" title="Message sent: 2022-03-30 19:00">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Intel tdp is close to its actual power draw</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958803004004388915" id="message-958803004004388915" title="Message sent: 2022-03-30 19:00">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I know what idle is</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958803020152438834" id="message-958803020152438834" title="Message sent: 2022-03-30 19:00">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It means nothing</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958803060300341268" id="message-958803060300341268" title="Message sent: 2022-03-30 19:01">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">A server doesn’t need to be on if it does nothing</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:01</span>
+
+            <div class="chatlog__message " data-message-id="958803151681617922" id="message-958803151681617922" title="Message sent: 2022-03-30 19:01">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">huh? the server draws more power under load than idle</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958803216877899836" id="message-958803216877899836" title="Message sent: 2022-03-30 19:01">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">that means... something</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:01</span>
+
+            <div class="chatlog__message " data-message-id="958803297416937503" id="message-958803297416937503" title="Message sent: 2022-03-30 19:01">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yes, but if it’s doing nothing it should be off, drawing nothing</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958803332309319731" id="message-958803332309319731" title="Message sent: 2022-03-30 19:02">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Why run a server if it’s doing nothing</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958803424730832947" id="message-958803424730832947" title="Message sent: 2022-03-30 19:02">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">There are workloads that aren’t too impactful, but it’s still doing something</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:03</span>
+
+            <div class="chatlog__message " data-message-id="958803621217173504" id="message-958803621217173504" title="Message sent: 2022-03-30 19:03">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">ok sorry i guess i should have been more specific: the services the server is running are not under any load and are not processing requests</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:04</span>
+
+            <div class="chatlog__message " data-message-id="958803827346247690" id="message-958803827346247690" title="Message sent: 2022-03-30 19:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">What I think you mean is with everything running that you want consistently without new workload</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958803869784231956" id="message-958803869784231956" title="Message sent: 2022-03-30 19:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Not processing requests or under a load is still doing nothing</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958803954140065792" id="message-958803954140065792" title="Message sent: 2022-03-30 19:04">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Just a disconnect between my and your experience, I think I get what you’re saying</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:05</span>
+
+            <div class="chatlog__message " data-message-id="958804219639529552" id="message-958804219639529552" title="Message sent: 2022-03-30 19:05">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><img loading="lazy" class="emoji " alt="🤷" title="person_shrugging" src="https://twemoji.maxcdn.com/2/svg/1f937.svg">‍♂️</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:05</span>
+
+            <div class="chatlog__message " data-message-id="958804226526547988" id="message-958804226526547988" title="Message sent: 2022-03-30 19:05">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">My only rebuttal was that you don’t always need something power hungry like older enterprise equipment if you can get thin clients, arm devices or old consumer hardware</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958804300547637308" id="message-958804300547637308" title="Message sent: 2022-03-30 19:05">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It’s bizarre trying to get to the same page sometimes</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958804347947483176" id="message-958804347947483176" title="Message sent: 2022-03-30 19:06">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I worked in NOCs and data centers for a while</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958804424254435349" id="message-958804424254435349" title="Message sent: 2022-03-30 19:06">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">As well as a storage engineer so to me if it’s idling and not doing things it’s about to be decommissioned</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958804521113501837" id="message-958804521113501837" title="Message sent: 2022-03-30 19:06">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">If you’re starting a business however, doing so on low power may not be ideal</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:07</span>
+
+            <div class="chatlog__message " data-message-id="958804557616517200" id="message-958804557616517200" title="Message sent: 2022-03-30 19:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">i mean... &quot;cheap self-hosted server&quot; is going to be idle 99% of the time <img loading="lazy" class="emoji " alt="😉" title="wink" src="https://twemoji.maxcdn.com/2/svg/1f609.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:07</span>
+
+            <div class="chatlog__message " data-message-id="958804561852760104" id="message-958804561852760104" title="Message sent: 2022-03-30 19:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Though I’d probably say go cloud for the first bit</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-30 19:07">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="andyshinn#5555" style="">andyshinn</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958802409696661514&#39;)">
+the last Dell servers i have experience with were PE 2950s and those things were louder than small planes                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:07</span>
+
+            <div class="chatlog__message " data-message-id="958804597965717545" id="message-958804597965717545" title="Message sent: 2022-03-30 19:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Ok so HPs are loud AF always. And the old 2950s where an airplane xD</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:07</span>
+
+            <div class="chatlog__message " data-message-id="958804607209963561" id="message-958804607209963561" title="Message sent: 2022-03-30 19:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Then go arm!</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958804621399306291" id="message-958804621399306291" title="Message sent: 2022-03-30 19:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace"><img loading="lazy" class="emoji emoji--large" alt="😂" title="joy" src="https://twemoji.maxcdn.com/2/svg/1f602.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:07</span>
+
+            <div class="chatlog__message " data-message-id="958804633961259048" id="message-958804633961259048" title="Message sent: 2022-03-30 19:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">the newer 11th gen and up stuff are pretty quiet tho..</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:07</span>
+
+            <div class="chatlog__message " data-message-id="958804679670792243" id="message-958804679670792243" title="Message sent: 2022-03-30 19:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">That’s not in a 610</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958804726307233834" id="message-958804726307233834" title="Message sent: 2022-03-30 19:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Maybe an 810 or 910</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/206914075391688704/c99db651f6ca26a8710e565301846a6e.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="andyshinn#5555" data-user-id="206914075391688704" style="">andyshinn</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:07</span>
+
+            <div class="chatlog__message " data-message-id="958804799267151942" id="message-958804799267151942" title="Message sent: 2022-03-30 19:07">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">we need audio demos now <img loading="lazy" class="emoji " alt="😉" title="wink" src="https://twemoji.maxcdn.com/2/svg/1f609.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:08</span>
+
+            <div class="chatlog__message " data-message-id="958804830888018040" id="message-958804830888018040" title="Message sent: 2022-03-30 19:08">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Don’t subject me to that</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958804940065759262" id="message-958804940065759262" title="Message sent: 2022-03-30 19:08">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I like rpi and old laptops and desktops</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958804968578625596" id="message-958804968578625596" title="Message sent: 2022-03-30 19:08">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">You can usually get it all for cheap or free</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958805005291384913" id="message-958805005291384913" title="Message sent: 2022-03-30 19:08">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Pi4b handles webservers pretty easily</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958805060182245376" id="message-958805060182245376" title="Message sent: 2022-03-30 19:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Also I couldn’t find someone to give this Hp to</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958805074056974366" id="message-958805074056974366" title="Message sent: 2022-03-30 19:09">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Nobody likes hp</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="dronakin#4404" style="">Dunk</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958805060182245376&#39;)">
+Also I couldn’t find someone to give this Hp to                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/335583193833013260/b103574ff7192ab09a00b95c67cdf2c2.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="QuantumRaven#7343" data-user-id="335583193833013260" style="color: rgb(207,36,246)">QuantumRaven [She/Her]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:15</span>
+
+            <div class="chatlog__message " data-message-id="958806664109252708" id="message-958806664109252708" title="Message sent: 2022-03-30 19:15">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Pics of it?</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:16</span>
+
+            <div class="chatlog__message " data-message-id="958806981471244368" id="message-958806981471244368" title="Message sent: 2022-03-30 19:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It’s just an old server</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:16</span>
+
+            <div class="chatlog__message " data-message-id="958806992288383056" id="message-958806992288383056" title="Message sent: 2022-03-30 19:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah I mean if you just want to basic web server or a couple of small apps raspberry Pi&#39;s are fine. Especially the raspberry pi 4&#39;s but those are so hard to get now</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:16</span>
+
+            <div class="chatlog__message " data-message-id="958807041256882186" id="message-958807041256882186" title="Message sent: 2022-03-30 19:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Pssssssh I got two <img loading="lazy" class="emoji " alt="😎" title="sunglasses" src="https://twemoji.maxcdn.com/2/svg/1f60e.svg"></span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958807063998378014" id="message-958807063998378014" title="Message sent: 2022-03-30 19:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I get it though</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:16</span>
+
+            <div class="chatlog__message " data-message-id="958807066103935086" id="message-958807066103935086" title="Message sent: 2022-03-30 19:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">And yeah HP servers are just kind of -meh- imo</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:17</span>
+
+            <div class="chatlog__message " data-message-id="958807113067552808" id="message-958807113067552808" title="Message sent: 2022-03-30 19:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">It winds down but it’s not quiet</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:17</span>
+
+            <div class="chatlog__message " data-message-id="958807127479185518" id="message-958807127479185518" title="Message sent: 2022-03-30 19:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">I have two Pi4s, but I&#39;d like to get a few more and I&#39;m not spending $100 each</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-30 19:17">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="dronakin#4404" data-user-id="127932529289199616" style="">Dunk</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 19:17</span>
+
+            <div class="chatlog__message " data-message-id="958807140229845023" id="message-958807140229845023" title="Message sent: 2022-03-30 19:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Neither are NetApp products</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+            <div class="chatlog__message " data-message-id="958807186753077309" id="message-958807186753077309" title="Message sent: 2022-03-30 19:17">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Get that 5 finger discount</span>
+
+                        </div>
+                    </div>
+
+
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="laughing">
+                                <img class="emoji emoji--small" alt="&#128518;" src="https://twemoji.maxcdn.com/2/svg/1f606.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/127932529289199616/c9eddaeefdb095258176ea1748df653b.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="dronakin#4404" style="">Dunk</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958790467661729792&#39;)">
+If a dime is 3-400$                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/234812423746486274/baa6048874ae1ea55067ffdf9ee2fe8b.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Rat#2957" data-user-id="234812423746486274" style="color: rgb(254,95,85)">Rat</span>
+
+
+        <span class="chatlog__timestamp">2022-03-30 21:44</span>
+
+            <div class="chatlog__message " data-message-id="958844268246605904" id="message-958844268246605904" title="Message sent: 2022-03-30 21:44">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">just a figure of speech.. lolz</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/719240336437674034/b42c235a553cd7a7eac90dcb0b9e2426.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="veganismRulez#8155" data-user-id="719240336437674034" style="">[[::.:Loading:.::]]</span>
+
+
+        <span class="chatlog__timestamp">2022-03-31 09:02</span>
+
+            <div class="chatlog__message " data-message-id="959014851332685834" id="message-959014851332685834" title="Message sent: 2022-03-31 09:02">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Not sure what you ppl think about on-premise, but <a href="https://www.hetzner.com/">https://www.hetzner.com/</a> has a very competitive price IMHO</span>
+
+                                <span class="chatlog__edited-timestamp" title="2022-03-31 09:07">(edited)</span>
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="Snowie (D4rk)#0116" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;958807127479185518&#39;)">
+I have two Pi4s, but I&#39;d like to get a few more and I&#39;m not spending $100 each                    </span>
+
+                        <span class="chatlog__reference-edited-timestamp" title="2022-03-30 19:17">(edited)</span>
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272904404359839744/ffd71541943ba4d818a3c616949dfdcf.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="DarksideVT#2284" data-user-id="272904404359839744" style="">DarksideVT</span>
+
+
+        <span class="chatlog__timestamp">2022-03-31 13:14</span>
+
+            <div class="chatlog__message " data-message-id="959078323873533983" id="message-959078323873533983" title="Message sent: 2022-03-31 13:14">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Where did you find them for only $100??? <a href="https://www.amazon.com/Raspberry-Model-2019-Quad-Bluetooth/dp/B07TC2BK1X">https://www.amazon.com/Raspberry-Model-2019-Quad-Bluetooth/dp/B07TC2BK1X</a></span>
+
+                        </div>
+                    </div>
+
+
+                        <div class="chatlog__embed">
+                                <div class="chatlog__embed-color-pill chatlog__embed-color-pill--default"></div>
+
+                            <div class="chatlog__embed-content-container">
+                                <div class="chatlog__embed-content">
+                                    <div class="chatlog__embed-text">
+
+                                            <div class="chatlog__embed-title">
+                                                    <a class="chatlog__embed-title-link" href="https://www.amazon.com/Raspberry-Model-2019-Quad-Bluetooth/dp/B07TC2BK1X">
+                                                        <div class="markdown preserve-whitespace">Raspberry Pi 4 Model B 2019 Quad Core 64 Bit WiFi Bluetooth (4GB)</div>
+                                                    </a>
+                                            </div>
+
+                                            <div class="chatlog__embed-description">
+                                                <div class="markdown preserve-whitespace">Raspberry Pi 4 Model B 2019 Quad Core 64 Bit WiFi Bluetooth (4GB)</div>
+                                            </div>
+
+                                    </div>
+
+                                        <div class="chatlog__embed-thumbnail-container">
+                                            <a class="chatlog__embed-thumbnail-link" href="https://images-ext-2.discordapp.net/external/TSQl94yt5stHQoxrMLlEnG2LL2FohF5Mi-vFKZRcsKQ/https/images-na.ssl-images-amazon.com/images/I/41VohlVc5zL._SR600%252c315_PIWhiteStrip%252cBottomLeft%252c0%252c35_PIStarRatingFIVE%252cBottomLeft%252c360%252c-6_SR600%252c315_ZA8%25252C230%252c445%252c290%252c400%252c400%252cAmazonEmberBold%252c12%252c4%252c0%252c0%252c5_SCLZZZZZZZ_FMpng_BG255%252c255%252c255.jpg">
+                                                <img class="chatlog__embed-thumbnail" src="https://images-ext-2.discordapp.net/external/TSQl94yt5stHQoxrMLlEnG2LL2FohF5Mi-vFKZRcsKQ/https/images-na.ssl-images-amazon.com/images/I/41VohlVc5zL._SR600%252c315_PIWhiteStrip%252cBottomLeft%252c0%252c35_PIStarRatingFIVE%252cBottomLeft%252c360%252c-6_SR600%252c315_ZA8%25252C230%252c445%252c290%252c400%252c400%252cAmazonEmberBold%252c12%252c4%252c0%252c0%252c5_SCLZZZZZZZ_FMpng_BG255%252c255%252c255.jpg" alt="Thumbnail" loading="lazy">
+                                            </a>
+                                        </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    <div class="chatlog__reactions">
+                            <div class="chatlog__reaction" title="sob">
+                                <img class="emoji emoji--small" alt="&#128557;" src="https://twemoji.maxcdn.com/2/svg/1f62d.svg" loading="lazy">
+                                <span class="chatlog__reaction-count">1</span>
+                            </div>
+                    </div>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+        <div class="chatlog__reference-symbol"></div>
+        <div class="chatlog__reference">
+                <img class="chatlog__reference-avatar" src="https://cdn.discordapp.com/avatars/272904404359839744/ffd71541943ba4d818a3c616949dfdcf.png?size=128" alt="Avatar" loading="lazy">
+                <span class="chatlog__reference-name" title="DarksideVT#2284" style="">DarksideVT</span>
+                <div class="chatlog__reference-content">
+                    <span class="chatlog__reference-link" onclick="scrollToMessage(event, &#39;959078323873533983&#39;)">
+Where did you find them for only $100??? <a href="https://www.amazon.com/Raspberry-Model-2019-Quad-Bluetooth/dp/B07TC2BK1X">https://www.amazon.com/Raspberry-Model-2019-Quad-Bluetooth/dp/B07TC2BK1X</a>                    </span>
+
+                </div>
+        </div>
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/97341415431892992/3407815671bce9b766069ad13311bc69.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="Snowie (D4rk)#0116" data-user-id="97341415431892992" style="color: rgb(207,36,246)">Snowie (D4rk)</span>
+
+
+        <span class="chatlog__timestamp">2022-03-31 13:15</span>
+
+            <div class="chatlog__message " data-message-id="959078532863111199" id="message-959078532863111199" title="Message sent: 2022-03-31 13:15">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">at a local store that still had some in stock xD xD mind you that was like two months ago - they are probably gone or more now</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+
+<div class="chatlog__message-group">
+
+    <div class="chatlog__author-avatar-container">
+        <img class="chatlog__author-avatar" src="https://cdn.discordapp.com/avatars/272904404359839744/ffd71541943ba4d818a3c616949dfdcf.png?size=128" alt="Avatar" loading="lazy">
+    </div>
+
+    <div class="chatlog__messages">
+        <span class="chatlog__author-name" title="DarksideVT#2284" data-user-id="272904404359839744" style="">DarksideVT</span>
+
+
+        <span class="chatlog__timestamp">2022-03-31 13:16</span>
+
+            <div class="chatlog__message " data-message-id="959078815261401168" id="message-959078815261401168" title="Message sent: 2022-03-31 13:16">
+                    <div class="chatlog__content">
+                        <div class="markdown">
+                            <span class="preserve-whitespace">Yeah, I wanted to do a small Pi Cluster project but, I might as well buy old x86 machines at this point.</span>
+
+                        </div>
+                    </div>
+
+
+
+            </div>
+    </div>
+</div>
+
+
+</div>
+
+<div class="postamble">
+    <div class="postamble__entry">Exported 95 message(s)</div>
+</div>
+
+</body>
+
+</html>
